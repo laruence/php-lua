@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
+<package version="1.0" packagerversion="1.9.2">
+ <name>lua</name>
+ <summary>Embedded lua interpreter</summary>
+ <description>&quot;Lua is a powerful, fast, light-weight, embeddable scripting language.&quot; 
+ This extension embeds the lua interpreter and offers an OO-API to lua variables and functions.
+ </description>
+ <maintainers>
+  <maintainer>
+   <user>johannes</user>
+   <name>Johannes Schlüter</name>
+   <email>johannes@php.net</email>
+   <role>lead</role>
+  </maintainer>
+  <maintainer>
+   <user>laruence</user>
+   <name>Xinchen Hui</name>
+   <email>laruence@php.net</email>
+   <role>lead</role>
+  </maintainer>
+  <maintainer>
+   <user>msaraujo</user>
+   <name>Marcelo Araujo</name>
+   <email>msaraujo@php.net</email>
+   <role>developer</role>
+  </maintainer>
+  </maintainers>
+ <release>
+  <version>0.9.1</version>
+  <date>2011-11-24</date>
+  <license>PHP</license>
+  <state>beta</state>
+  <notes>- Compatible with PHP5.3+
+- Fix ZTS build
+- Fix mem leak when get value from lua
+  </notes>
+  <deps>
+   <dep type="php" rel="ge" version="5.1.0"/>
+   <dep type="php" rel="le" version="5.4.0"/>
+  </deps>
+  <filelist>
+   <dir name="tests">
+    <file role="test" name="001.phpt"/>
+    <file role="test" name="002.phpt"/>
+    <file role="test" name="003.phpt"/>
+    <file role="test" name="004.phpt"/>
+    <file role="test" name="005.phpt"/>
+    <file role="test" name="006.phpt"/>
+    <file role="test" name="007.phpt"/>
+    <file role="test" name="008.phpt"/>
+    <file role="test" name="009.phpt"/>
+    <file role="test" name="010.phpt"/>
+    <file role="test" name="011.phpt"/>
+   </dir> <!-- /tests -->
+   <file role="src" name="config.m4"/>
+   <file role="src" name="config.w32"/>
+   <file role="src" name="CREDITS"/>
+   <file role="src" name="EXPERIMENTAL"/>
+   <file role="src" name="lua.c"/>
+   <file role="src" name="lua_closure.c"/>
+   <file role="src" name="lua_closure.h"/>
+   <file role="src" name="php_lua.h"/>
+  </filelist>
+ </release>
+</package>

@@ -1,0 +1,2 @@
+This extension embeds lua interpreter into PHP. We should emphasize that is
+still under development and is completely experimental.
