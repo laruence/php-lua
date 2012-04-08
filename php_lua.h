@@ -14,11 +14,15 @@
   |             Xinchen  Hui        <laruence@php.net>                   |
   |             Marcelo  Araujo     <msaraujo@php.net>                   |
   +----------------------------------------------------------------------+
-   $Id: php_lua.h 319733 2011-11-24 07:13:56Z laruence $
+   $Id: php_lua.h 324349 2012-03-19 03:17:15Z laruence $
 */
 
 #ifndef PHP_LUA_H
 #define PHP_LUA_H
+
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 extern zend_module_entry lua_module_entry;
 #define phpext_lua_ptr &lua_module_entry
@@ -45,7 +49,7 @@ extern zend_module_entry lua_module_entry;
 #define Z_DELREF_P 	 ZVAL_DELREF
 #endif
 
-#define PHP_LUA_VERSION "0.9.0"
+#define PHP_LUA_VERSION "0.9.4"
 #define Z_LUAVAL_P(obj) ((php_lua_object*)(zend_object_store_get_object(obj TSRMLS_CC)))->L
 
 struct _php_lua_object {

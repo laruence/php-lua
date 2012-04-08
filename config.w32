@@ -1,13 +1,13 @@
-// $Id: config.w32 314169 2011-08-03 14:05:16Z laruence $
+// $Id: config.w32 322119 2012-01-12 05:47:50Z laruence $
 // vim:ft=javascript
 
 ARG_WITH("lua", "lua support", "no");
 
 if (PHP_LUA != "no") {
-	if (CHECK_LIB("liblua.lib", "lua", PHP_LUA) &&
+	if (CHECK_LIB("liblua.lib;lua.lib;lua51.lib", "lua", PHP_LUA) &&
 			CHECK_HEADER_ADD_INCLUDE("lua.h", "CFLAGS_LUA",
 				PHP_LUA + "\\include;" + PHP_PHP_BUILD + "\\include\\lua;" + PHP_LUA)) {
-		EXTENSION("lua", "lua.c");
+		EXTENSION("lua", "lua.c lua_closure.c");
 		AC_DEFINE('HAVE_LUA', 1, 'Have LUA library');
 	} else {
 		WARNING("lua not enabled; libraries and headers not found");

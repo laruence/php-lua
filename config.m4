@@ -1,4 +1,4 @@
-dnl $Id: config.m4 315592 2011-08-27 00:58:41Z johannes $
+dnl $Id: config.m4 321796 2012-01-05 17:23:48Z laruence $
 PHP_ARG_WITH(lua, for lua support,
 [  --with-lua=[DIR]    Include php lua support])
 
@@ -8,7 +8,7 @@ if test "$PHP_LUA" != "no"; then
   else
     AC_MSG_CHECKING(for lua in default path)
     for i in /usr/local /usr; do
-      if test -r $i/include/lua/include.h; then
+      if test -r $i/include/lua/lua.h; then
         LUA_DIR=$i
         AC_MSG_RESULT(found in $i)
         break
@@ -21,14 +21,14 @@ if test "$PHP_LUA" != "no"; then
     AC_MSG_ERROR(Please reinstall the lua distribution - lua.h should be in <lua-dir>/include/)
   fi
 
-  LUA_LIB_NAME=lua
+  LUA_LIB_NAME=liblua.a
 
-  if test -r $PHP_LUA/$PHP_LIBDIR/lib${LUA_LIB_NAME}.a; then
+  if test -r $PHP_LUA/$PHP_LIBDIR/${LUA_LIB_NAME}; then
     LUA_LIB_DIR=$PHP_LUA/$PHP_LIBDIR
   else
     AC_MSG_CHECKING(for lua library in default path)
     for i in /usr/lib /usr/lib64; do
-      if test -r $i/$PHP_LIBDIR/${LUA_LIB_DIR}.a; then
+      if test -r $i/${LUA_LIB_NAME}; then
         LUA_LIB_DIR=$i
         AC_MSG_RESULT(found in $i)
         break

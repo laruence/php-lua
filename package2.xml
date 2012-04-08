@@ -23,11 +23,11 @@
   <email>msaraujo@php.net</email>
   <active>yes</active>
  </developer>
- <date>2011-11-24</date>
- <time>15:17:25</time>
+ <date>2012-03-19</date>
+ <time>11:15:27</time>
  <version>
-  <release>0.9.1</release>
-  <api>0.9.1</api>
+  <release>0.9.4</release>
+  <api>0.9.4</api>
  </version>
  <stability>
   <release>beta</release>
@@ -35,9 +35,7 @@
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
-- Compatible with PHP5.3+
-- Fix ZTS build
-- Fix mem leak when get value from lua 
+  - Compatible with lua 5.2
  </notes>
  <contents> 
   <dir name="/"> 
@@ -78,6 +76,53 @@
  <providesextension>lua</providesextension>
  <extsrcrelease />
  <changelog> 
+  <release> 
+   <date>2012-03-19</date> 
+   <version> 
+    <release>0.9.4</release> 
+    <api>0.9.4</api> 
+   </version> 
+   <stability> 
+    <release>beta</release> 
+    <api>beta</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Compatible with lua 5.2
+   </notes> 
+  </release> 
+
+  <release> 
+   <date>2012-01-12</date> 
+   <version> 
+    <release>0.9.3</release> 
+    <api>0.9.3</api> 
+   </version> 
+   <stability> 
+    <release>beta</release> 
+    <api>beta</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Fix build on windows
+    - Fix build when building lua with static
+   </notes> 
+  </release> 
+  <release> 
+   <date>2012-01-06</date> 
+   <version> 
+    <release>0.9.2</release> 
+    <api>0.9.2</api> 
+   </version> 
+   <stability> 
+    <release>beta</release> 
+    <api>beta</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Fixed bug #60641 PECL install lua with lua5.1 packages
+   </notes> 
+  </release> 
   <release> 
    <date>2011-11-24</date> 
    <version> 
