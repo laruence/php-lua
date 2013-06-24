@@ -1,2 +1,6 @@
 "Lua is a powerful, fast, light-weight, embeddable scripting language." 
 This extension embeds the lua interpreter and offers an OO-API to lua variables and functions.
+
+==2013-06-24
+* bugfix:https://bugs.php.net/bug.php?id=65097
+* don't ignore 0 index when converting php var to lua
