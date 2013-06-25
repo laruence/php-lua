@@ -468,6 +468,7 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val TSRMLS_DC) {
 
 					zval_ptr_dtor(&zkey);
 				}
+				--ht->nApplyCount;
 			}
 			break;
 		default:
