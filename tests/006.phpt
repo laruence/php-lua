@@ -28,7 +28,7 @@ Testing fine
 Hello PHP
 Testing broken
 
-Warning: Lua::include(): lua error: %s '=' expected near 'fdrg' in %s on line %d
+Warning: Lua::include(): lua error: %s near 'fdrg' in %s on line %d
 
 Testing return
 Array

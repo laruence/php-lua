@@ -13,4 +13,4 @@ $l->eval("invalid code");
 --EXPECTF--
 12
 -0.53657291800043
-Warning: Lua::eval(): lua error: [string "line"]:1: '=' expected near 'code' in %s on line %d
+Warning: Lua::eval(): lua error: [string "line"]:1: %s near 'code' in %s on line %d

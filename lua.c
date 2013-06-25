@@ -454,9 +454,8 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val TSRMLS_DC) {
 							break;
 						case HASH_KEY_IS_LONG:
 							if (idx == 0) {
-								php_error_docref(NULL TSRMLS_CC, E_NOTICE
-										, "attempt to pass an array index begin with 0 to lua, the index 0 will be discarded");
-								continue;
+								php_error_docref(NULL TSRMLS_CC, E_STRICT,
+										"attempt to pass an array index begin with 0 to lua");
 							}
 							MAKE_STD_ZVAL(zkey);
 							ZVAL_LONG(zkey, idx);
