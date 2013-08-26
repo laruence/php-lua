@@ -316,6 +316,59 @@ static void php_lua_write_property(zval *object, zval *member, zval *value, cons
 }
 /* }}} */
 
+/** {{{  static int php_lua_call_callback(lua_State *L)
+*/
+static int php_lua_call_callback(lua_State *L) {
+	int  order		 = 0;
+	zval *return_value = NULL;
+	zval **func		 = NULL;
+	zval *callbacks	 = NULL;
+	TSRMLS_FETCH();
+
+	order = lua_tonumber(L, lua_upvalueindex(1));
+
+	callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1 TSRMLS_CC);
+
+	if (ZVAL_IS_NULL(callbacks)) {
+		return 0;
+	}
+
+	MAKE_STD_ZVAL(return_value);
+
+	if (zend_hash_index_find(Z_ARRVAL_P(callbacks), order, (void **)&func) == FAILURE) {
+		return 0;
+	}
+
+	if (!zend_is_callable(*func, 0, NULL TSRMLS_CC)) {
+		return 0;
+	} else {
+		zval **params = NULL;
+		int  i 		= 0;
+		int  arg_num  = lua_gettop(L);
+
+		params = ecalloc(arg_num, sizeof(zval));
+
+		for (; i<arg_num; i++) {
+			params[i] = php_lua_get_zval_from_lua(L, -(arg_num-i), NULL TSRMLS_CC);
+		}
+
+		call_user_function(EG(function_table), NULL, *func, return_value, arg_num, params TSRMLS_CC);
+
+		php_lua_send_zval_to_lua(L, return_value TSRMLS_CC);
+
+		for (i=0; i<arg_num; i++) {
+			zval_ptr_dtor(&params[i]);
+		}
+
+		efree(params);
+		zval_ptr_dtor(&return_value);
+
+		return 1;
+	}
+
+}
+/* }}} */
+
 /** {{{ zval * php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj TSRMLS_DC)
 */
 zval * php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj TSRMLS_DC) {
@@ -488,59 +541,6 @@ static int php_lua_arg_apply_func(void *data, void *L TSRMLS_DC) {
 	php_lua_send_zval_to_lua((lua_State*)L, *(zval**)data TSRMLS_CC);
 	return ZEND_HASH_APPLY_KEEP;
 } /* }}} */
-
-/** {{{  static int php_lua_call_callback(lua_State *L)
-*/
-static int php_lua_call_callback(lua_State *L) {
-	int  order		 = 0;
-	zval *return_value = NULL;
-	zval **func		 = NULL;
-	zval *callbacks	 = NULL;
-	TSRMLS_FETCH();
-
-	order = lua_tonumber(L, lua_upvalueindex(1));
-
-	callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1 TSRMLS_CC);
-
-	if (ZVAL_IS_NULL(callbacks)) {
-		return 0;
-	}
-
-	MAKE_STD_ZVAL(return_value);
-
-	if (zend_hash_index_find(Z_ARRVAL_P(callbacks), order, (void **)&func) == FAILURE) {
-		return 0;
-	}
-
-	if (!zend_is_callable(*func, 0, NULL TSRMLS_CC)) {
-		return 0;
-	} else {
-		zval **params = NULL;
-		int  i 		= 0;
-		int  arg_num  = lua_gettop(L);
-
-		params = ecalloc(arg_num, sizeof(zval));
-
-		for (; i<arg_num; i++) {
-			params[i] = php_lua_get_zval_from_lua(L, -(arg_num-i), NULL TSRMLS_CC);
-		}
-
-		call_user_function(EG(function_table), NULL, *func, return_value, arg_num, params TSRMLS_CC);
-
-		php_lua_send_zval_to_lua(L, return_value TSRMLS_CC);
-
-		for (i=0; i<arg_num; i++) {
-			zval_ptr_dtor(&params[i]);
-		}
-
-		efree(params);
-		zval_ptr_dtor(&return_value);
-
-		return 1;
-	}
-
-}
-/* }}} */
 
 /** {{{ static zval * php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, int use_self TSRMLS_DC)
 */
