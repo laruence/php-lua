@@ -316,6 +316,59 @@ static void php_lua_write_property(zval *object, zval *member, zval *value, cons
 }
 /* }}} */
 
+/** {{{  static int php_lua_call_callback(lua_State *L)
+*/
+static int php_lua_call_callback(lua_State *L) {
+	int  order		 = 0;
+	zval *return_value = NULL;
+	zval **func		 = NULL;
+	zval *callbacks	 = NULL;
+	TSRMLS_FETCH();
+
+	order = lua_tonumber(L, lua_upvalueindex(1));
+
+	callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1 TSRMLS_CC);
+
+	if (ZVAL_IS_NULL(callbacks)) {
+		return 0;
+	}
+
+	MAKE_STD_ZVAL(return_value);
+
+	if (zend_hash_index_find(Z_ARRVAL_P(callbacks), order, (void **)&func) == FAILURE) {
+		return 0;
+	}
+
+	if (!zend_is_callable(*func, 0, NULL TSRMLS_CC)) {
+		return 0;
+	} else {
+		zval **params = NULL;
+		int  i 		= 0;
+		int  arg_num  = lua_gettop(L);
+
+		params = ecalloc(arg_num, sizeof(zval));
+
+		for (; i<arg_num; i++) {
+			params[i] = php_lua_get_zval_from_lua(L, -(arg_num-i), NULL TSRMLS_CC);
+		}
+
+		call_user_function(EG(function_table), NULL, *func, return_value, arg_num, params TSRMLS_CC);
+
+		php_lua_send_zval_to_lua(L, return_value TSRMLS_CC);
+
+		for (i=0; i<arg_num; i++) {
+			zval_ptr_dtor(&params[i]);
+		}
+
+		efree(params);
+		zval_ptr_dtor(&return_value);
+
+		return 1;
+	}
+
+}
+/* }}} */
+
 /** {{{ zval * php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj TSRMLS_DC)
 */
 zval * php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj TSRMLS_DC) {
@@ -427,48 +480,64 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val TSRMLS_DC) {
 		case IS_OBJECT:
 		case IS_ARRAY:
 			{
-				HashTable *ht  		= NULL;
-				zval 		**ppzval 	= NULL;
+				if (zend_is_callable(val, 0, NULL TSRMLS_CC)) {
+					zval* callbacks = NULL;
 
-				ht = HASH_OF(val);
+					callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1 TSRMLS_CC);
 
-				if (++ht->nApplyCount > 1) {
-					php_error_docref(NULL TSRMLS_CC, E_ERROR, "recursion found");
-					--ht->nApplyCount;
-					break;
-				}
-
-				lua_newtable(L);
-				for(zend_hash_internal_pointer_reset(ht);
-						zend_hash_get_current_data(ht, (void **)&ppzval) == SUCCESS;
-						zend_hash_move_forward(ht)) {
-					char *key = NULL;
-					int  len  = 0;
-					long idx  = 0;
-					zval *zkey= NULL;
-
-					switch(zend_hash_get_current_key_ex(ht, &key, &len, &idx, 0, NULL)) {
-						case HASH_KEY_IS_STRING :
-							MAKE_STD_ZVAL(zkey);
-							ZVAL_STRINGL(zkey, key, len - 1, 1);
-							break;
-						case HASH_KEY_IS_LONG:
-							if (idx == 0) {
-								php_error_docref(NULL TSRMLS_CC, E_STRICT,
-										"attempt to pass an array index begin with 0 to lua");
-							}
-							MAKE_STD_ZVAL(zkey);
-							ZVAL_LONG(zkey, idx);
-							break;
+					if (ZVAL_IS_NULL(callbacks)) {
+						array_init(callbacks);
 					}
 
-					php_lua_send_zval_to_lua(L, zkey TSRMLS_CC);
-					php_lua_send_zval_to_lua(L, *ppzval TSRMLS_CC);
-					lua_settable(L, -3);
+					lua_pushnumber(L, zend_hash_num_elements(Z_ARRVAL_P(callbacks)));
+					lua_pushcclosure(L, php_lua_call_callback, 1);
 
-					zval_ptr_dtor(&zkey);
+					zval_add_ref(&val);
+					add_next_index_zval(callbacks, val);
+				} else {
+					HashTable *ht  		= NULL;
+					zval 		**ppzval 	= NULL;
+
+					ht = HASH_OF(val);
+
+					if (++ht->nApplyCount > 1) {
+						php_error_docref(NULL TSRMLS_CC, E_ERROR, "recursion found");
+						--ht->nApplyCount;
+						break;
+					}
+
+					lua_newtable(L);
+					for(zend_hash_internal_pointer_reset(ht);
+							zend_hash_get_current_data(ht, (void **)&ppzval) == SUCCESS;
+							zend_hash_move_forward(ht)) {
+						char *key = NULL;
+						int  len  = 0;
+						long idx  = 0;
+						zval *zkey= NULL;
+
+						switch(zend_hash_get_current_key_ex(ht, &key, &len, &idx, 0, NULL)) {
+							case HASH_KEY_IS_STRING :
+								MAKE_STD_ZVAL(zkey);
+								ZVAL_STRINGL(zkey, key, len - 1, 1);
+								break;
+							case HASH_KEY_IS_LONG:
+								if (idx == 0) {
+									php_error_docref(NULL TSRMLS_CC, E_STRICT,
+											"attempt to pass an array index begin with 0 to lua");
+								}
+								MAKE_STD_ZVAL(zkey);
+								ZVAL_LONG(zkey, idx);
+								break;
+						}
+
+						php_lua_send_zval_to_lua(L, zkey TSRMLS_CC);
+						php_lua_send_zval_to_lua(L, *ppzval TSRMLS_CC);
+						lua_settable(L, -3);
+
+						zval_ptr_dtor(&zkey);
+					}
+					--ht->nApplyCount;
 				}
-				--ht->nApplyCount;
 			}
 			break;
 		default:
@@ -488,59 +557,6 @@ static int php_lua_arg_apply_func(void *data, void *L TSRMLS_DC) {
 	php_lua_send_zval_to_lua((lua_State*)L, *(zval**)data TSRMLS_CC);
 	return ZEND_HASH_APPLY_KEEP;
 } /* }}} */
-
-/** {{{  static int php_lua_call_callback(lua_State *L)
-*/
-static int php_lua_call_callback(lua_State *L) {
-	int  order		 = 0;
-	zval *return_value = NULL;
-	zval **func		 = NULL;
-	zval *callbacks	 = NULL;
-	TSRMLS_FETCH();
-
-	order = lua_tonumber(L, lua_upvalueindex(1));
-
-	callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1 TSRMLS_CC);
-
-	if (ZVAL_IS_NULL(callbacks)) {
-		return 0;
-	}
-
-	MAKE_STD_ZVAL(return_value);
-
-	if (zend_hash_index_find(Z_ARRVAL_P(callbacks), order, (void **)&func) == FAILURE) {
-		return 0;
-	}
-
-	if (!zend_is_callable(*func, 0, NULL TSRMLS_CC)) {
-		return 0;
-	} else {
-		zval **params = NULL;
-		int  i 		= 0;
-		int  arg_num  = lua_gettop(L);
-
-		params = ecalloc(arg_num, sizeof(zval));
-
-		for (; i<arg_num; i++) {
-			params[i] = php_lua_get_zval_from_lua(L, -(arg_num-i), NULL TSRMLS_CC);
-		}
-
-		call_user_function(EG(function_table), NULL, *func, return_value, arg_num, params TSRMLS_CC);
-
-		php_lua_send_zval_to_lua(L, return_value TSRMLS_CC);
-
-		for (i=0; i<arg_num; i++) {
-			zval_ptr_dtor(&params[i]);
-		}
-
-		efree(params);
-		zval_ptr_dtor(&return_value);
-
-		return 1;
-	}
-
-}
-/* }}} */
 
 /** {{{ static zval * php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, int use_self TSRMLS_DC)
 */
