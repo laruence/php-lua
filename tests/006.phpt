@@ -17,19 +17,22 @@ $l = new lua();
 foreach ($code as $n => $c) {
     echo "\nTesting $n\n";
     file_put_contents($filename, $c);
-    $ret = $l->include($filename);
-	if ($ret) print_r($ret);
+    try {
+        $ret = $l->include($filename);
+        if ($ret) print_r($ret);
+    } catch (LuaException $e) {
+        assert($e->getCode() == LUA_ERRSYNTAX);
+        echo "\n".$e->getMessage();
+    }
     @unlink($filename);
 }
 ?>
 --EXPECTF--
-
 Testing fine
 Hello PHP
 Testing broken
 
-Warning: Lua::include(): lua error: %s near 'fdrg' in %s on line %d
-
+%s:%d: syntax error near 'fdrg'
 Testing return
 Array
 (

@@ -638,7 +638,7 @@ static zval * php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, i
 		zend_hash_apply_with_argument(Z_ARRVAL_P(args), php_lua_arg_apply_func, (void *)L TSRMLS_CC);
 	}
 
-	if (lua_pcall(L, arg_num, LUA_MULTRET, 0) != 0) {
+	if (lua_pcall(L, arg_num, LUA_MULTRET, 0) != LUA_OK) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,
 				"call to lua function %s failed", lua_tostring(L, -1));
 		lua_pop(L, lua_gettop(L) - bp);
@@ -678,6 +678,7 @@ PHP_METHOD(lua, eval) {
 	lua_State *L	 = NULL;
 	char *statements = NULL;
 	long bp, len	 = 0;
+	int ret;
 
 	L = Z_LUAVAL_P(getThis());
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &statements, &len) == FAILURE) {
@@ -685,9 +686,8 @@ PHP_METHOD(lua, eval) {
 	}
 
 	bp = lua_gettop(L);
-	if (luaL_loadbuffer(L, statements, len, "line") || lua_pcall(L, 0, LUA_MULTRET, 0)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,
-				"lua error: %s", lua_tostring(L, -1));
+	if ((ret = luaL_loadbuffer(L, statements, len, "line")) != LUA_OK || (ret = lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK)) {
+		zend_throw_exception_ex(lua_exception_ce, ret TSRMLS_CC, "%s", lua_tostring(L, -1));
 		lua_pop(L, 1);
 		RETURN_FALSE;
 	} else {
@@ -718,6 +718,7 @@ PHP_METHOD(lua, include) {
 	lua_State *L = NULL;
 	char *file   = NULL;
 	long bp, len = 0;
+	int ret;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &file, &len) == FAILURE) {
 		return;
@@ -728,16 +729,15 @@ PHP_METHOD(lua, include) {
 			|| (PG(safe_mode)
 				&& !php_checkuid(file, "rb+", CHECKUID_CHECK_MODE_PARAM))
 #endif
-	   ){
+	   ) {
 		RETURN_FALSE;
 	}
 
 	L = Z_LUAVAL_P(getThis());
 
 	bp = lua_gettop(L);
-	if (luaL_dofile(L, file)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,
-				"lua error: %s", lua_tostring(L, -1));
+	if ((ret = luaL_loadfile(L, file)) != LUA_OK || (ret = lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK)) {
+		zend_throw_exception_ex(lua_exception_ce, ret TSRMLS_CC, "%s", lua_tostring(L, -1));
 		lua_pop(L, 1);
 		RETURN_FALSE;
 	}  else {
@@ -886,6 +886,16 @@ PHP_MINIT_FUNCTION(lua) {
 	zend_class_entry ce;
 
 	INIT_CLASS_ENTRY(ce, "Lua", lua_class_methods);
+
+	REGISTER_LONG_CONSTANT("LUA_OK", LUA_OK, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LUA_YIELD", LUA_YIELD, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LUA_ERRRUN", LUA_ERRRUN, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LUA_ERRSYNTAX", LUA_ERRSYNTAX, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LUA_ERRMEM", LUA_ERRMEM, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LUA_ERRGCMM", LUA_ERRGCMM, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LUA_ERRERR", LUA_ERRERR, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LUA_ERRFILE", LUA_ERRFILE, CONST_PERSISTENT | CONST_CS);
+
 
 	lua_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	lua_ce->create_object = php_lua_create_object;

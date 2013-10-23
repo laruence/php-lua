@@ -1,11 +1,18 @@
 --TEST--
-Check for index 0
+Lua::include() with error codes
 --SKIPIF--
 <?php if (!extension_loaded("lua")) print "skip"; ?>
 --FILE--
 <?php 
+$filename = __FILE__.'.tmp';
+
 $l = new lua();
-$l->assign("b", range(1, 0));
+try {
+    $ret = $l->include($filename);
+} catch (LuaException $e) {
+    assert($e->getCode() == LUA_ERRFILE);
+    echo "\n".$e->getMessage();
+}
 ?>
 --EXPECTF--
-Strict Standards: Lua::assign(): attempt to pass an array index begin with 0 to lua in %s012.php on line %d
+cannot open %s012.php.tmp: No such file or directory

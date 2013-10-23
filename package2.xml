@@ -26,8 +26,8 @@
  <date>2013-10-23</date>
  <time>12:04:27</time>
  <version>
-  <release>0.9.5</release>
-  <api>0.9.5</api>
+  <release>1.1.0</release>
+  <api>1.1.0</api>
  </version>
  <stability>
   <release>beta</release>
@@ -49,6 +49,7 @@
    <file name="config.w32" role="src" />
    <file name="CREDITS"    role="src" />
    <file name="EXPERIMENTAL" role="src" />
+   <file name="LICENSE" role="src" />
    <dir name="tests">
     <file name="001.phpt" role="test" />
     <file name="002.phpt" role="test" />
@@ -82,8 +83,8 @@
   <release> 
    <date>2012-10-23</date> 
    <version> 
-    <release>0.9.5</release> 
-    <api>0.9.5</api> 
+    <release>1.1.0</release> 
+    <api>1.1.0</api> 
    </version> 
    <stability> 
     <release>beta</release> 
@@ -97,6 +98,21 @@
    </notes> 
   </release> 
 
+  <release> 
+   <date>2012-06-24</date> 
+   <version> 
+    <release>1.0.0</release> 
+    <api>1.0.0</api> 
+   </version> 
+   <stability> 
+    <release>stable</release> 
+    <api>stable</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Release stable version
+   </notes> 
+  </release> 
   <release> 
    <date>2012-03-19</date> 
    <version> 
