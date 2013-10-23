@@ -49,7 +49,7 @@ extern zend_module_entry lua_module_entry;
 #define Z_DELREF_P 	 ZVAL_DELREF
 #endif
 
-#define PHP_LUA_VERSION "0.9.4"
+#define PHP_LUA_VERSION "0.9.5"
 #define Z_LUAVAL_P(obj) ((php_lua_object*)(zend_object_store_get_object(obj TSRMLS_CC)))->L
 
 struct _php_lua_object {

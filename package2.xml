@@ -23,11 +23,11 @@
   <email>msaraujo@php.net</email>
   <active>yes</active>
  </developer>
- <date>2012-03-19</date>
- <time>11:15:27</time>
+ <date>2013-10-23</date>
+ <time>12:04:27</time>
  <version>
-  <release>0.9.4</release>
-  <api>0.9.4</api>
+  <release>0.9.5</release>
+  <api>0.9.5</api>
  </version>
  <stability>
   <release>beta</release>
@@ -35,7 +35,9 @@
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
-  - Compatible with lua 5.2
+  - Fixed #65097 (nApplyCount release missing) (emptyhua at gmail dot com)
+  - Trigger E_STRICT when pass an array with index '0' to lua instead of ignoring it
+  - added support for callable functions and closures as values returned injected into lua engine (harald at octris dot org)
  </notes>
  <contents> 
   <dir name="/"> 
@@ -59,6 +61,8 @@
     <file name="009.phpt" role="test" />
     <file name="010.phpt" role="test" />
     <file name="011.phpt" role="test" />
+    <file name="012.phpt" role="test" />
+    <file name="013.phpt" role="test" />
    </dir>
   </dir> 
  </contents> 
@@ -66,7 +70,6 @@
   <required> 
    <php> 
     <min>5.1.0</min> 
-    <max>5.4.0</max>
    </php> 
    <pearinstaller> 
     <min>1.4.0</min> 
@@ -76,6 +79,24 @@
  <providesextension>lua</providesextension>
  <extsrcrelease />
  <changelog> 
+  <release> 
+   <date>2012-10-23</date> 
+   <version> 
+    <release>0.9.5</release> 
+    <api>0.9.5</api> 
+   </version> 
+   <stability> 
+    <release>beta</release> 
+    <api>beta</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Fixed #65097 (nApplyCount release missing) (emptyhua at gmail dot com)
+    - Trigger E_STRICT when pass an array with index '0' to lua instead of ignoring it
+    - added support for callable functions and closures as values returned injected into lua engine (harald at octris dot org)
+   </notes> 
+  </release> 
+
   <release> 
    <date>2012-03-19</date> 
    <version> 
@@ -91,7 +112,6 @@
     - Compatible with lua 5.2
    </notes> 
   </release> 
-
   <release> 
    <date>2012-01-12</date> 
    <version> 
