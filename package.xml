@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
-<package version="1.0" packagerversion="1.9.2">
+<package version="1.0" packagerversion="1.9.4">
  <name>lua</name>
  <summary>Embedded lua interpreter</summary>
  <description>&quot;Lua is a powerful, fast, light-weight, embeddable scripting language.&quot; 
@@ -27,17 +27,16 @@
   </maintainer>
   </maintainers>
  <release>
-  <version>0.9.1</version>
-  <date>2011-11-24</date>
+  <version>0.9.5</version>
+  <date>2013-10-23</date>
   <license>PHP</license>
   <state>beta</state>
-  <notes>- Compatible with PHP5.3+
-- Fix ZTS build
-- Fix mem leak when get value from lua
+  <notes>- Fixed #65097 (nApplyCount release missing) (emptyhua at gmail dot com)
+- Trigger E_STRICT when pass an array with index &apos;0&apos; to lua instead of ignoring it
+- added support for callable functions and closures as values returned injected into lua engine (harald at octris dot org)
   </notes>
   <deps>
    <dep type="php" rel="ge" version="5.1.0"/>
-   <dep type="php" rel="le" version="5.4.0"/>
   </deps>
   <filelist>
    <dir name="tests">
@@ -52,6 +51,8 @@
     <file role="test" name="009.phpt"/>
     <file role="test" name="010.phpt"/>
     <file role="test" name="011.phpt"/>
+    <file role="test" name="012.phpt"/>
+    <file role="test" name="013.phpt"/>
    </dir> <!-- /tests -->
    <file role="src" name="config.m4"/>
    <file role="src" name="config.w32"/>
