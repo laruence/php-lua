@@ -47,9 +47,9 @@
    <file name="lua_closure.h" role="src" />
    <file name="lua_closure.c" role="src" />
    <file name="config.w32" role="src" />
-   <file name="CREDITS"    role="src" />
-   <file name="EXPERIMENTAL" role="src" />
-   <file name="LICENSE" role="src" />
+   <file name="CREDITS"    role="doc" />
+   <file name="EXPERIMENTAL" role="doc" />
+   <file name="LICENSE" role="doc" />
    <dir name="tests">
     <file name="001.phpt" role="test" />
     <file name="002.phpt" role="test" />
