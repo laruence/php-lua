@@ -21,14 +21,14 @@ if test "$PHP_LUA" != "no"; then
     AC_MSG_ERROR(Please reinstall the lua distribution - lua.h should be in <lua-dir>/include/)
   fi
 
-  LUA_LIB_NAME=liblua.a
+  LUA_LIB_NAME=liblua
 
-  if test -r $PHP_LUA/$PHP_LIBDIR/${LUA_LIB_NAME}; then
+  if test -r $PHP_LUA/$PHP_LIBDIR/${LUA_LIB_NAME}.${SHLIB_SUFFIX_NAME} -o -r $PHP_LUA/$PHP_LIBDIR/${LUA_LIB_NAME}.a; then
     LUA_LIB_DIR=$PHP_LUA/$PHP_LIBDIR
   else
     AC_MSG_CHECKING(for lua library in default path)
-    for i in /usr/lib /usr/lib64; do
-      if test -r $i/${LUA_LIB_NAME}; then
+    for i in /usr/$PHP_LIBDIR /usr/lib /usr/lib64; do
+      if test -r $i/${LUA_LIB_NAME}.${SHLIB_SUFFIX_NAME} -o -r $i/${LUA_LIB_NAME}.a; then
         LUA_LIB_DIR=$i
         AC_MSG_RESULT(found in $i)
         break

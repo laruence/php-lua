@@ -511,8 +511,8 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val TSRMLS_DC) {
 							zend_hash_get_current_data(ht, (void **)&ppzval) == SUCCESS;
 							zend_hash_move_forward(ht)) {
 						char *key = NULL;
-						int  len  = 0;
-						long idx  = 0;
+						uint len  = 0;
+						ulong idx  = 0;
 						zval *zkey= NULL;
 
 						switch(zend_hash_get_current_key_ex(ht, &key, &len, &idx, 0, NULL)) {
@@ -892,7 +892,9 @@ PHP_MINIT_FUNCTION(lua) {
 	REGISTER_LONG_CONSTANT("LUA_ERRRUN", LUA_ERRRUN, CONST_PERSISTENT | CONST_CS);
 	REGISTER_LONG_CONSTANT("LUA_ERRSYNTAX", LUA_ERRSYNTAX, CONST_PERSISTENT | CONST_CS);
 	REGISTER_LONG_CONSTANT("LUA_ERRMEM", LUA_ERRMEM, CONST_PERSISTENT | CONST_CS);
+#ifdef LUA_ERRGCMM
 	REGISTER_LONG_CONSTANT("LUA_ERRGCMM", LUA_ERRGCMM, CONST_PERSISTENT | CONST_CS);
+#endif
 	REGISTER_LONG_CONSTANT("LUA_ERRERR", LUA_ERRERR, CONST_PERSISTENT | CONST_CS);
 	REGISTER_LONG_CONSTANT("LUA_ERRFILE", LUA_ERRFILE, CONST_PERSISTENT | CONST_CS);
 

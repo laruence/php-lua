@@ -32,7 +32,7 @@ Testing fine
 Hello PHP
 Testing broken
 
-%s:%d: syntax error near 'fdrg'
+%s:%d: %s near 'fdrg'
 Testing return
 Array
 (

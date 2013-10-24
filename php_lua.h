@@ -24,6 +24,11 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+/* LUA_OK is defined sinc 5.2 */
+#ifndef LUA_OK
+#define LUA_OK 0
+#endif
+
 extern zend_module_entry lua_module_entry;
 #define phpext_lua_ptr &lua_module_entry
 
