@@ -511,8 +511,8 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val TSRMLS_DC) {
 							zend_hash_get_current_data(ht, (void **)&ppzval) == SUCCESS;
 							zend_hash_move_forward(ht)) {
 						char *key = NULL;
-						int  len  = 0;
-						long idx  = 0;
+						uint len  = 0;
+						ulong idx  = 0;
 						zval *zkey= NULL;
 
 						switch(zend_hash_get_current_key_ex(ht, &key, &len, &idx, 0, NULL)) {
