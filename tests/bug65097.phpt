@@ -1,7 +1,10 @@
 --TEST--
 Bug #65097 (nApplyCount release missing)
 --SKIPIF--
-<?php if (!extension_loaded("lua")) print "skip"; ?>
+<?php
+if (!extension_loaded("lua")) print "skip lua extension missing";
+if (!extension_loaded("json")) print "skip json extension missing";
+?>
 --INI--
 error_reporting=E_ALL&~E_STRICT
 --FILE--
