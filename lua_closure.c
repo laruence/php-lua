@@ -203,7 +203,7 @@ static zend_object_value php_lua_closure_create_object(zend_class_entry *ce TSRM
 	zend_object_std_init(lua_closure_obj, ce TSRMLS_CC);
 #if (PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4)
 	zend_hash_copy(lua_closure_obj->properties, &ce->default_properties, 
-#if (PHP_MINOR_VERSION < 3) 
+#if (PHP_MINOR_VERSION < 4)
 			(copy_ctor_func_t) zval_add_ref,
 #else
 			zval_copy_property_ctor(ce), 
