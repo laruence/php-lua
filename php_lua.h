@@ -55,14 +55,25 @@ extern zend_module_entry lua_module_entry;
 #endif
 
 #define PHP_LUA_VERSION "1.1.1-dev"
-#define Z_LUAVAL_P(obj) ((php_lua_object*)(zend_object_store_get_object(obj TSRMLS_CC)))->L
+
 
 struct _php_lua_object {
- 	zend_object obj;
-  	lua_State *L;
+  lua_State *L;
+  zend_object obj;
+    
 };
-
 typedef struct _php_lua_object php_lua_object;
+
+static inline lua_State *php_lua_obj_from_obj(zend_object *obj) {
+  php_lua_object * o;
+  o=(php_lua_object*)((char*)(obj)-XtOffsetOf(php_lua_object, obj));
+  return o->L;
+}
+
+#define Z_LUAVAL_P(obj) php_lua_obj_from_obj(Z_OBJ_P((obj)))
+
+
+
 
 zval * php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj TSRMLS_DC);
 int php_lua_send_zval_to_lua(lua_State *L, zval *val TSRMLS_DC);
