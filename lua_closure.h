@@ -11,8 +11,9 @@
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
   | Author    : Johannes Schlueter  <johannes@php.net>                   |
-  | 			Xinchen  Hui        <laruence@php.net>                   |
+  | 		Xinchen  Hui        <laruence@php.net>                   |
   |             Marcelo  Araujo     <msaraujo@php.net>                   |
+  |             Helmut  Januschka   <helmut@januschka.com>               |
   +----------------------------------------------------------------------+
    $Id: lua_closure.h 319733 2011-11-24 07:13:56Z laruence $
 */

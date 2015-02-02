@@ -13,6 +13,7 @@
   | Author    : Johannes Schlueter  <johannes@php.net>                   |
   |             Xinchen  Hui        <laruence@php.net>                   |
   |             Marcelo  Araujo     <msaraujo@php.net>                   |
+  |             Helmut Januschka    <helmut@januschka.com>               |
   +----------------------------------------------------------------------+
    $Id: php_lua.h 324349 2012-03-19 03:17:15Z laruence $
 */

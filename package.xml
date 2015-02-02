@@ -23,6 +23,12 @@
   <email>msaraujo@php.net</email>
   <active>yes</active>
  </developer>
+ <developer>
+  <name>Helmut Januschka</name>
+  <user>hjanuschka</user>
+  <email>helmut@januschka.com</email>
+  <active>yes</active>
+ </developer>
  <date>2013-10-23</date>
  <time>12:04:27</time>
  <version>
