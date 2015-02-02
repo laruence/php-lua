@@ -15,7 +15,9 @@ try {
     assert($e->getCode() == LUA_ERRSYNTAX);
     echo "\n", $e->getMessage();
 }
+
+?>
 --EXPECTF--
 12
 -0.53657291800043
-[string "line"]:1: %s near 'code'
+[string "line"]:1: syntax error near 'code'
