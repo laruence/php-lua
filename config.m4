@@ -33,7 +33,7 @@ if test "$PHP_LUA" != "no"; then
   if test "$PHP_LUA_VERSION" != "yes"; then
     LUA_LIB_SUFFIX=lua$PHP_LUA_VERSION
   else
-    LUA_LIB_SUFFIX=lua$PHP_LUA_VERSION
+    LUA_LIB_SUFFIX=lua
   fi
 
   LUA_LIB_NAME=lib$LUA_LIB_SUFFIX
