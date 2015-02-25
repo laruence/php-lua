@@ -30,7 +30,7 @@ if test "$PHP_LUA" != "no"; then
     AC_MSG_ERROR(Please reinstall the lua distribution - lua.h should be in <lua-dir>/include/)
   fi
 
-  if test "$PHP_LUA_VERSION" != "yes"; then
+  if test "$PHP_LUA_VERSION" != "yes" -a "$PHP_LUA_VERSION" != "no"; then
     LUA_LIB_SUFFIX=lua$PHP_LUA_VERSION
   else
     LUA_LIB_SUFFIX=lua
