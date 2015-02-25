@@ -5,7 +5,7 @@ PHP_ARG_WITH(lua-version, to specify a custom lua version, [  --with-lua-version
 
 if test "$PHP_LUA" != "no"; then
   if test -r $PHP_LUA/include/lua.h; then
-    LUA_INCLUDE_DIR=$PHP_LUA
+    LUA_INCLUDE_DIR=$PHP_LUA/include
   else
     AC_MSG_CHECKING(for lua in default path)
     for i in /usr/local /usr; do
@@ -30,10 +30,10 @@ if test "$PHP_LUA" != "no"; then
     AC_MSG_ERROR(Please reinstall the lua distribution - lua.h should be in <lua-dir>/include/)
   fi
 
-  if test "$PHP_LUA_VERSION" != "yes"; then
+  if test "$PHP_LUA_VERSION" != "yes" -a "$PHP_LUA_VERSION" != "no"; then
     LUA_LIB_SUFFIX=lua$PHP_LUA_VERSION
   else
-    LUA_LIB_SUFFIX=lua$PHP_LUA_VERSION
+    LUA_LIB_SUFFIX=lua
   fi
 
   LUA_LIB_NAME=lib$LUA_LIB_SUFFIX
