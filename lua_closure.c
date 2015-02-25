@@ -11,7 +11,7 @@
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
   | Author    : Johannes Schlueter  <johannes@php.net>                   |
-  |		Xinchen  Hui        <laruence@php.net>                   |
+  |             Xinchen  Hui        <laruence@php.net>                   |
   |             Marcelo  Araujo     <msaraujo@php.net>                   |
   |             Helmut  Januschka   <helmut@januschka.com>               |
   +----------------------------------------------------------------------+
@@ -44,12 +44,12 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_invoke, 0, 0, 1)
 ZEND_END_ARG_INFO()
 /* }}} */
 
-/** {{{ zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj TSRMLS_DC)
+/** {{{ zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj)
  */
-zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj TSRMLS_DC) {
+zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj) {
 	object_init_ex(instance, lua_closure_ce);
-	zend_update_property_long(lua_closure_ce, instance, ZEND_STRL("_closure"), ref_id TSRMLS_CC);
-	zend_update_property(lua_closure_ce, instance, ZEND_STRL("_lua_object"), lua_obj TSRMLS_CC);
+	zend_update_property_long(lua_closure_ce, instance, ZEND_STRL("_closure"), ref_id);
+	zend_update_property(lua_closure_ce, instance, ZEND_STRL("_lua_object"), lua_obj);
 
 	return instance;
 }
@@ -66,14 +66,14 @@ PHP_METHOD(lua_closure, __construct) {
 PHP_METHOD(lua_closure, __destruct) {
 	zval *lua_obj, *closure, rv;
 
-	lua_obj = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_lua_object"), 1, &rv TSRMLS_CC);
+	lua_obj = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_lua_object"), 1, &rv);
 	if (ZVAL_IS_NULL(lua_obj)
 			|| Z_TYPE_P(lua_obj) != IS_OBJECT
-			|| !instanceof_function(Z_OBJCE_P(lua_obj), lua_ce TSRMLS_CC)) {
+			|| !instanceof_function(Z_OBJCE_P(lua_obj), lua_ce)) {
 		RETURN_FALSE;
 	}
 
-	closure = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_closure"), 1, &rv TSRMLS_CC);
+	closure = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_closure"), 1, &rv);
 	if (!Z_LVAL_P(closure)) {
 		RETURN_FALSE;
 	}
@@ -96,23 +96,23 @@ PHP_METHOD(lua_closure, invoke) {
 		arguments = emalloc(sizeof(zval*) * ZEND_NUM_ARGS());
 		if (zend_get_parameters_array_ex(ZEND_NUM_ARGS(), arguments) == FAILURE) {
 			efree(arguments);
-			zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "cannot get arguments for calling closure");
+			zend_throw_exception_ex(NULL, 0, "cannot get arguments for calling closure");
 			return;
 		}
 	}
 
-	lua_obj = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_lua_object"), 1, &rv TSRMLS_CC);
+	lua_obj = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_lua_object"), 1, &rv);
 
 	if (ZVAL_IS_NULL(lua_obj)
 			|| Z_TYPE_P(lua_obj) != IS_OBJECT
-			|| !instanceof_function(Z_OBJCE_P(lua_obj), lua_ce TSRMLS_CC)) {
-		zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "corrupted Lua object");
+			|| !instanceof_function(Z_OBJCE_P(lua_obj), lua_ce)) {
+		zend_throw_exception_ex(NULL, 0, "corrupted Lua object");
 		return;
 	}
 
-	closure = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_closure"), 1, &rv TSRMLS_CC);
+	closure = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_closure"), 1, &rv);
 	if (!Z_LVAL_P(closure)) {
-		zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "invalid lua closure");
+		zend_throw_exception_ex(NULL, 0, "invalid lua closure");
 		return;
 	}
 
@@ -122,14 +122,14 @@ PHP_METHOD(lua_closure, invoke) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, Z_LVAL_P(closure));
 	if (LUA_TFUNCTION != lua_type(L, lua_gettop(L))) {
 		lua_pop(L, -1);
-		zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "call to lua closure failed");
+		zend_throw_exception_ex(NULL, 0, "call to lua closure failed");
 		return;
 	}
 
 	if (ZEND_NUM_ARGS()) {
 		int i = 0;
 		for(;i<ZEND_NUM_ARGS();i++) {
-			php_lua_send_zval_to_lua(L, &arguments[i] TSRMLS_CC);
+			php_lua_send_zval_to_lua(L, &arguments[i]);
 		}
 	}
 
@@ -138,7 +138,7 @@ PHP_METHOD(lua_closure, invoke) {
 			efree(arguments);
 		}
 		lua_pop(L, lua_gettop(L) - bp);
-		zend_throw_exception_ex(NULL, 0 TSRMLS_CC, 
+		zend_throw_exception_ex(NULL, 0, 
 				"call to lua function %s failed", lua_tostring(L, -1));
 		return;
 	}
@@ -148,14 +148,14 @@ PHP_METHOD(lua_closure, invoke) {
 	if (!sp) {
 		RETURN_NULL();
 	} else if (sp == 1) {
-		zval *tmp = php_lua_get_zval_from_lua(L, -1, lua_obj TSRMLS_CC);
-		RETURN_ZVAL(tmp, 0, 0);
+		php_lua_get_zval_from_lua(L, -1, lua_obj, return_value);
 	} else {
+		zval rv;
 		int  i = 0;
 		array_init(return_value);
 		for (i = -sp; i < 0; i++) {
-			zval *tmp = php_lua_get_zval_from_lua(L, i, lua_obj TSRMLS_CC);
-			add_next_index_zval(return_value, tmp);
+			php_lua_get_zval_from_lua(L, i, lua_obj, &rv);
+			add_next_index_zval(return_value, &rv);
 		}
 	}
 
@@ -186,31 +186,27 @@ zend_function_entry lua_closure_methods[] = {
 };
 /* }}} */
 
-static void php_lua_closure_dtor_object(void *object, zend_object_handlers handle TSRMLS_DC) /* {{{ */
+static void php_lua_closure_dtor_object(void *object, zend_object_handlers handle) /* {{{ */
 {
 	zend_object *obj = (zend_object*)object;
 
-	zend_object_std_dtor(obj TSRMLS_CC);
+	zend_object_std_dtor(obj);
 
 	efree(obj);
 } /* }}} */
-zend_object *php_lua_closure_create_object(zend_class_entry *ce)
-{
-	zend_object*     intern;
 
-	
-	
+zend_object *php_lua_closure_create_object(zend_class_entry *ce) /* {{{ */
+{
+	zend_object *intern;
 	
 	intern = emalloc(sizeof(zend_object)+ sizeof(zval) * (ce->default_properties_count - 1));
 
 	if (!intern) {
-		php_error_docref(NULL TSRMLS_CC, E_ERROR, "alloc memory for lua object failed");
+		php_error_docref(NULL, E_ERROR, "alloc memory for lua object failed");
 	}
 
-	
-
-	zend_object_std_init(intern, ce TSRMLS_CC);
-	object_properties_init(intern, ce TSRMLS_CC);
+	zend_object_std_init(intern, ce);
+	object_properties_init(intern, ce);
 
 	intern->handlers = zend_get_std_object_handlers();
 	
@@ -218,17 +214,17 @@ zend_object *php_lua_closure_create_object(zend_class_entry *ce)
 	
 } /* }}} */
 
-void php_lua_closure_register(TSRMLS_D) /* {{{ */
+void php_lua_closure_register() /* {{{ */
 {
 	zend_class_entry ce;
 
 	INIT_CLASS_ENTRY(ce, "LuaClosure", lua_closure_methods);
-	lua_closure_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	lua_closure_ce = zend_register_internal_class(&ce);
 	lua_closure_ce->create_object = php_lua_closure_create_object;
 	lua_closure_ce->ce_flags |= ZEND_ACC_FINAL;
 
-	zend_declare_property_long(lua_closure_ce, ZEND_STRL("_closure"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
-	zend_declare_property_null(lua_closure_ce, ZEND_STRL("_lua_object"), ZEND_ACC_PRIVATE TSRMLS_CC);
+	zend_declare_property_long(lua_closure_ce, ZEND_STRL("_closure"), 0, ZEND_ACC_PRIVATE);
+	zend_declare_property_null(lua_closure_ce, ZEND_STRL("_lua_object"), ZEND_ACC_PRIVATE);
 
 
 } /* }}} */

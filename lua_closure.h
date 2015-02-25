@@ -18,9 +18,9 @@
    $Id: lua_closure.h 319733 2011-11-24 07:13:56Z laruence $
 */
 
-void php_lua_closure_register(TSRMLS_D);
+void php_lua_closure_register();
 zend_class_entry *php_lua_get_closure_ce();
-zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj TSRMLS_DC);
+zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj);
 
 /*
  * Local variables:
