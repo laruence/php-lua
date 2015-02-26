@@ -15,7 +15,6 @@
   |             Marcelo  Araujo     <msaraujo@php.net>                   |
   |             Helmut Januschka    <helmut@januschka.com>               |
   +----------------------------------------------------------------------+
-   $Id: php_lua.h 324349 2012-03-19 03:17:15Z laruence $
 */
 
 #ifndef PHP_LUA_H
@@ -49,14 +48,7 @@ extern zend_module_entry lua_module_entry;
 #define LUA_G(v) (lua_globals.v)
 #endif
 
-#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 3)) || (PHP_MAJOR_VERSION < 5)
-#define Z_ADDREF_P 	 ZVAL_ADDREF
-#define Z_REFCOUNT_P ZVAL_REFCOUNT
-#define Z_DELREF_P 	 ZVAL_DELREF
-#endif
-
 #define PHP_LUA_VERSION "1.1.1-dev"
-
 
 struct _php_lua_object {
   lua_State *L;
@@ -81,8 +73,8 @@ PHP_MINFO_FUNCTION(lua);
 PHP_METHOD(lua, __construct);
 PHP_METHOD(lua, eval);
 PHP_METHOD(lua, require);
-#endif	/* PHP_LUA_H */
 
+#endif	/* PHP_LUA_H */
 
 /*
  * Local variables:

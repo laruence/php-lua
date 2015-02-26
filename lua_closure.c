@@ -15,7 +15,6 @@
   |             Marcelo  Araujo     <msaraujo@php.net>                   |
   |             Helmut  Januschka   <helmut@januschka.com>               |
   +----------------------------------------------------------------------+
-   $Id: lua_closure.c 319740 2011-11-24 08:06:48Z laruence $
 */
 
 #ifdef HAVE_CONFIG_H

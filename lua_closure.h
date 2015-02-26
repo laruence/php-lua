@@ -11,16 +11,18 @@
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
   | Author    : Johannes Schlueter  <johannes@php.net>                   |
-  | 		Xinchen  Hui        <laruence@php.net>                   |
+  |             Xinchen  Hui        <laruence@php.net>                   |
   |             Marcelo  Araujo     <msaraujo@php.net>                   |
   |             Helmut  Januschka   <helmut@januschka.com>               |
   +----------------------------------------------------------------------+
-   $Id: lua_closure.h 319733 2011-11-24 07:13:56Z laruence $
 */
 
+#ifndef LUA_CLOSURE_H
+#define LUA_CLOSURE_H
 void php_lua_closure_register();
 zend_class_entry *php_lua_get_closure_ce();
 zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj);
+#endif
 
 /*
  * Local variables:
