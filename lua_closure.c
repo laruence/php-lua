@@ -78,7 +78,7 @@ PHP_METHOD(lua_closure, __destruct) {
 		RETURN_FALSE;
 	}
 
-	luaL_unref(Z_LUAVAL_P(lua_obj), LUA_REGISTRYINDEX, Z_LVAL_P(closure));
+	luaL_unref((Z_LUAVAL_P(lua_obj))->L, LUA_REGISTRYINDEX, Z_LVAL_P(closure));
 }
 /* }}} */
 
@@ -116,7 +116,7 @@ PHP_METHOD(lua_closure, invoke) {
 		return;
 	}
 
-	L = Z_LUAVAL_P(lua_obj);
+	L = (Z_LUAVAL_P(lua_obj))->L;
 
 	bp = lua_gettop(L);
 	lua_rawgeti(L, LUA_REGISTRYINDEX, Z_LVAL_P(closure));

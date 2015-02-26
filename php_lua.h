@@ -61,13 +61,12 @@ extern zend_module_entry lua_module_entry;
 struct _php_lua_object {
   lua_State *L;
   zend_object obj;
-    
 };
+
 typedef struct _php_lua_object php_lua_object;
 
-static inline lua_State *php_lua_obj_from_obj(zend_object *obj) {
-  php_lua_object *o = (php_lua_object*)((char*)(obj)-XtOffsetOf(php_lua_object, obj));
-  return o->L;
+static inline php_lua_object *php_lua_obj_from_obj(zend_object *obj) {
+  return (php_lua_object*)((char*)(obj)-XtOffsetOf(php_lua_object, obj));
 }
 
 #define Z_LUAVAL_P(obj) php_lua_obj_from_obj(Z_OBJ_P((obj)))
