@@ -29,11 +29,11 @@
   <email>helmut@januschka.com</email>
   <active>yes</active>
  </developer>
- <date>2013-10-23</date>
- <time>12:04:27</time>
+ <date>2015-10-27</date>
+ <time>11:12:27</time>
  <version>
-  <release>1.1.0</release>
-  <api>1.1.0</api>
+  <release>2.0.0</release>
+  <api>2.0.0</api>
  </version>
  <stability>
   <release>beta</release>
@@ -41,9 +41,7 @@
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
-  - Fixed #65097 (nApplyCount release missing) (emptyhua at gmail dot com)
-  - Trigger E_STRICT when pass an array with index '0' to lua instead of ignoring it
-  - added support for callable functions and closures as values returned injected into lua engine (harald at octris dot org)
+  - Release lua for PHP7
  </notes>
  <contents> 
   <dir name="/"> 
@@ -88,6 +86,22 @@
  <extsrcrelease />
  <changelog> 
   <release> 
+   <date>2015-10-27</date> 
+   <version> 
+    <release>2.0.0</release> 
+    <api>2.0.0</api> 
+   </version> 
+   <stability> 
+    <release>beta</release> 
+    <api>beta</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Release lua for PHP7
+   </notes> 
+  </release> 
+
+  <release> 
    <date>2012-10-23</date> 
    <version> 
     <release>1.1.0</release> 
@@ -104,7 +118,6 @@
     - added support for callable functions and closures as values returned injected into lua engine (harald at octris dot org)
    </notes> 
   </release> 
-
   <release> 
    <date>2012-06-24</date> 
    <version> 
