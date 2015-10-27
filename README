@@ -1,2 +1,5 @@
-"Lua is a powerful, fast, light-weight, embeddable scripting language." 
+##PHP Lua
+======
 This extension embeds the lua interpreter and offers an OO-API to lua variables and functions.
+
+"Lua is a powerful, fast, light-weight, embeddable scripting language." 

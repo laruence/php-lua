@@ -3,6 +3,8 @@ PHP_ARG_WITH(lua, for lua support,
 [  --with-lua=[DIR]    Include php lua support])
 PHP_ARG_WITH(lua-version, to specify a custom lua version, [  --with-lua-version=[VERSION]]   Use the specified lua version.)
 
+PHP_ARG_WITH(lua-version, to specify a custom lua version, [  --with-lua-version=[VERSION]]   Use the specified lua version.)
+
 if test "$PHP_LUA" != "no"; then
   if test -r $PHP_LUA/include/lua.h; then
     LUA_INCLUDE_DIR=$PHP_LUA/include
