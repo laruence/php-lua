@@ -436,9 +436,10 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val) /* {{{ */ {
 					zval_add_ref(val);
 					add_next_index_zval(callbacks, val);
 				} else {
-				    zval *v;
+					zval *v;
+					ulong longkey;
 					zend_string *key;
-				    zval zkey;
+					zval zkey;
 
 					HashTable *ht = HASH_OF(val);
 					if (++ht->u.v.nApplyCount > 1) {
@@ -448,12 +449,11 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val) /* {{{ */ {
 					}
 					lua_newtable(L);
 
-					ZEND_HASH_FOREACH_STR_KEY_VAL(ht, key, v) {
-						if (Z_TYPE_P(v) == IS_STRING) {
+					ZEND_HASH_FOREACH_KEY_VAL_IND(ht, longkey, key, v) {
+						if (key) {
 							ZVAL_STR(&zkey, key);
-						}
-						if (Z_TYPE_P(v) == IS_LONG) {
-							ZVAL_LONG(&zkey, Z_LVAL_P(v));
+						} else {
+							ZVAL_LONG(&zkey, longkey);
 						}
 						php_lua_send_zval_to_lua(L, &zkey);
 						php_lua_send_zval_to_lua(L, v);
