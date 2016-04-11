@@ -442,11 +442,15 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val) /* {{{ */ {
 					zval zkey;
 
 					HashTable *ht = HASH_OF(val);
-					if (++ht->u.v.nApplyCount > 1) {
-						php_error_docref(NULL, E_ERROR, "recursion found");
-						--ht->u.v.nApplyCount;
-						break;
+					if (ZEND_HASH_APPLY_PROTECTION(ht)) {
+						ZEND_HASH_INC_APPLY_COUNT(ht);
+						if (ZEND_HASH_GET_APPLY_COUNT(ht) > 1) {
+							php_error_docref(NULL, E_ERROR, "recursion found");
+							ZEND_HASH_DEC_APPLY_COUNT(ht);
+							break;
+						}
 					}
+
 					lua_newtable(L);
 
 					ZEND_HASH_FOREACH_KEY_VAL_IND(ht, longkey, key, v) {
@@ -460,7 +464,9 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val) /* {{{ */ {
 						lua_settable(L, -3);
 					} ZEND_HASH_FOREACH_END();
 
-					--ht->u.v.nApplyCount;
+					if (ZEND_HASH_APPLY_PROTECTION(ht)) {
+						ZEND_HASH_DEC_APPLY_COUNT(ht);
+					}
 				}
 			}
 			break;
