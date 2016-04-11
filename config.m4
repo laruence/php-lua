@@ -17,6 +17,12 @@ if test "$PHP_LUA" != "no"; then
         break
       fi
 
+      if test -r $i/include/lua.h; then
+        LUA_INCLUDE_DIR=$i/include
+        AC_MSG_RESULT(found in $i)
+        break
+      fi
+
       if test "$PHP_LUA_VERSION" != "yes"; then
         if test -r $i/include/lua$PHP_LUA_VERSION/lua.h; then
           LUA_INCLUDE_DIR=$i/include/lua$PHP_LUA_VERSION
