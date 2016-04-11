@@ -23,11 +23,11 @@
   <email>msaraujo@php.net</email>
   <active>yes</active>
  </developer>
- <date>2015-10-27</date>
- <time>11:12:27</time>
+ <date>2016-04-11</date>
+ <time>10:50:27</time>
  <version>
-  <release>2.0.0</release>
-  <api>2.0.0</api>
+  <release>2.0.1</release>
+  <api>2.0.1</api>
  </version>
  <stability>
   <release>beta</release>
@@ -35,7 +35,7 @@
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
-  - Release lua for PHP7
+  - Fixed bug #71997 (One-Dimensional arrays cause segmentation faults)
  </notes>
  <contents> 
   <dir name="/"> 
@@ -63,6 +63,7 @@
     <file name="012.phpt" role="test" />
     <file name="013.phpt" role="test" />
     <file name="bug65097.phpt" role="test" />
+    <file name="bug71997.phpt" role="test" />
    </dir>
   </dir> 
  </contents> 
@@ -80,6 +81,22 @@
  <extsrcrelease />
  <changelog> 
   <release> 
+   <date>2016-04-11</date> 
+   <version> 
+    <release>2.0.1</release> 
+    <api>2.0.1</api> 
+   </version> 
+   <stability> 
+    <release>beta</release> 
+    <api>beta</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Fixed bug #71997 (One-Dimensional arrays cause segmentation faults)
+   </notes> 
+  </release> 
+
+  <release> 
    <date>2015-10-27</date> 
    <version> 
     <release>2.0.0</release> 
@@ -94,7 +111,6 @@
     - Release lua for PHP7
    </notes> 
   </release> 
-
   <release> 
    <date>2012-10-23</date> 
    <version> 
