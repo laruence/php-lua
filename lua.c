@@ -403,8 +403,10 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val) /* {{{ */ {
 
 	switch (Z_TYPE_P(val)) {
 		case IS_TRUE:
+			lua_pushboolean(L, 1);
+			break;
 		case IS_FALSE:
-			lua_pushboolean(L, Z_LVAL_P(val));
+			lua_pushboolean(L, 0);
 			break;
 		case IS_NULL:
 			lua_pushnil(L);
