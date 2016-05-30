@@ -351,7 +351,7 @@ zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv
 					break;
 				}
 
-				switch(Z_TYPE(key)) {
+				switch (Z_TYPE(key)) {
 					case IS_DOUBLE:
 					case IS_LONG:
 						add_index_zval(rv, Z_DVAL(key), &val);
@@ -401,6 +401,7 @@ zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv
 
 int php_lua_send_zval_to_lua(lua_State *L, zval *val) /* {{{ */ {
 
+try_again:
 	switch (Z_TYPE_P(val)) {
 		case IS_TRUE:
 			lua_pushboolean(L, 1);
@@ -408,6 +409,7 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val) /* {{{ */ {
 		case IS_FALSE:
 			lua_pushboolean(L, 0);
 			break;
+		case IS_UNDEF:
 		case IS_NULL:
 			lua_pushnil(L);
 			break;
@@ -471,6 +473,14 @@ int php_lua_send_zval_to_lua(lua_State *L, zval *val) /* {{{ */ {
 					}
 				}
 			}
+			break;
+		case IS_REFERENCE:
+			ZVAL_DEREF(val);
+			goto try_again;
+			break;
+		case IS_INDIRECT:
+			val = Z_INDIRECT_P(val);
+			goto try_again;
 			break;
 		default:
 			php_error_docref(NULL, E_ERROR, "unsupported type `%s' for lua", zend_zval_type_name(val));
