@@ -174,6 +174,11 @@ static void php_lua_dtor_object(zend_object *object) /* {{{ */ {
 	php_lua_object *lua_obj = php_lua_obj_from_obj(object);
 
 	zend_object_std_dtor(&(lua_obj->obj));
+}
+/* }}} */
+
+static void php_lua_free_object(zend_object *object) /* {{{ */ {
+	php_lua_object *lua_obj = php_lua_obj_from_obj(object);
 
 	if (lua_obj->L) {
 		lua_close(lua_obj->L);
@@ -831,7 +836,7 @@ PHP_MINIT_FUNCTION(lua) {
 	memcpy(&lua_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	lua_object_handlers.offset = XtOffsetOf(php_lua_object, obj);
 	lua_object_handlers.dtor_obj = php_lua_dtor_object;
-	lua_object_handlers.free_obj = NULL;
+	lua_object_handlers.free_obj = php_lua_free_object;
 	lua_object_handlers.clone_obj = NULL;
 	lua_object_handlers.write_property = php_lua_write_property;
 	lua_object_handlers.read_property  = php_lua_read_property;

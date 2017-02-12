@@ -35,7 +35,7 @@
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
-  - Fixed issue #20 (PHP 7: Lua::eval(): unsupported type `unknown' for lua)
+  - Fixed bug #73964 (Segmentation fault)
  </notes>
  <contents> 
   <dir name="/"> 
@@ -65,6 +65,7 @@
     <file name="issue012.phpt" role="test" />
     <file name="bug65097.phpt" role="test" />
     <file name="bug71997.phpt" role="test" />
+    <file name="bug73964.phpt" role="test" />
    </dir>
   </dir> 
  </contents> 
