@@ -197,12 +197,7 @@ zend_object *php_lua_create_object(zend_class_entry *ce)
 
 	lua_atpanic(L, php_lua_atpanic);
 
-	intern = emalloc(sizeof(php_lua_object) + sizeof(zval) * (ce->default_properties_count - 1));
-
-	if (!intern) {
-		php_error_docref(NULL, E_ERROR, "alloc memory for lua object failed");
-	}
-
+	intern = ecalloc(1, sizeof(php_lua_object) + zend_object_properties_size(ce));
 	intern->L = L;
 
 	zend_object_std_init(&intern->obj, ce);
