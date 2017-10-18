@@ -93,31 +93,31 @@ ZEND_GET_MODULE(lua)
 static void php_lua_stack_dump(lua_State* L) {
 	int i = 1;
 	int n = lua_gettop(L);
-	printf("The Length of stack is %d\n", n);
+	php_printf("The Length of stack is %d\n", n);
 	for (; i <= n; ++i) {
 		int t = lua_type(L, i);
-		printf("%s:", lua_typename(L, t));
+		php_printf("%s:", lua_typename(L, t));
 		switch(t) {
 			case LUA_TNUMBER:
-				printf("%f", lua_tonumber(L, i));
+				php_printf("%f", lua_tonumber(L, i));
 				break;
 			case LUA_TSTRING:
-				printf("%s", lua_tostring(L, i));
+				php_printf("%s", lua_tostring(L, i));
 				break;
 			case LUA_TTABLE:
 				break;
 			case LUA_TFUNCTION:
 				break;
 			case LUA_TNIL:
-				printf("NULL");
+				php_printf("NULL");
 				break;
 			case LUA_TBOOLEAN:
-				printf("%s", lua_toboolean(L, i) ? "TRUE" : "FALSE");
+				php_printf("%s", lua_toboolean(L, i) ? "TRUE" : "FALSE");
 				break;
 			default:
 				break;
 		}
-		printf("\n");
+		php_printf("\n");
 	}
 }
 /* }}} */
