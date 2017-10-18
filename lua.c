@@ -556,13 +556,9 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 		}
 	} else if (IS_OBJECT == Z_TYPE_P(func)
 			&& instanceof_function(Z_OBJCE_P(func), php_lua_get_closure_ce())) {
-		zval *closure = zend_read_property(php_lua_get_closure_ce(), func, ZEND_STRL("_closure"), 1, &rv);
-		if (!Z_LVAL_P(closure)) {
-			zend_throw_exception_ex(lua_exception_ce, 0, "invalid lua closure");
-			return NULL;
-		}
+		lua_closure_object *closure_obj = php_lua_closure_object_from_zend_object(Z_OBJ_P(func));
 		bp = lua_gettop(L);
-		lua_rawgeti(L, LUA_REGISTRYINDEX, Z_LVAL_P(closure));
+		lua_rawgeti(L, LUA_REGISTRYINDEX, closure_obj->closure);
 		if (LUA_TFUNCTION != lua_type(L, lua_gettop(L))) {
 			lua_pop(L, -1);
 			zend_throw_exception_ex(lua_exception_ce, 0, "call to lua closure failed");

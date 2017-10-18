@@ -19,6 +19,17 @@
 
 #ifndef LUA_CLOSURE_H
 #define LUA_CLOSURE_H
+typedef struct _lua_closure_object {
+	long closure;
+	zval lua;
+
+	zend_object std;
+} lua_closure_object;
+
+static inline lua_closure_object* php_lua_closure_object_from_zend_object(zend_object *zobj) {
+	return ((lua_closure_object*)(zobj + 1)) - 1;
+}
+
 void php_lua_closure_register();
 zend_class_entry *php_lua_get_closure_ce();
 zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj);
