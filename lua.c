@@ -63,19 +63,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_free, 0, 0, 1)
 ZEND_END_ARG_INFO()
 /* }}} */
 
-static PHP_RSHUTDOWN_FUNCTION(lua) /* {{{ */
-{
-	zval *callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1);
-
-	if (callbacks) {
-		zval_ptr_dtor(callbacks);
-	}
-
-	return SUCCESS;
-}
-/* }}} */
-
-
 /* {{{ lua_module_entry
 */
 zend_module_entry lua_module_entry = {
@@ -87,7 +74,7 @@ zend_module_entry lua_module_entry = {
 	PHP_MINIT(lua),
 	PHP_MSHUTDOWN(lua),
 	NULL,
-	PHP_RSHUTDOWN(lua),
+	NULL,
 	PHP_MINFO(lua),
 #if ZEND_MODULE_API_NO >= 20010901
 	PHP_LUA_VERSION,
