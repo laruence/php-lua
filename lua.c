@@ -93,31 +93,31 @@ ZEND_GET_MODULE(lua)
 static void php_lua_stack_dump(lua_State* L) {
 	int i = 1;
 	int n = lua_gettop(L);
-	printf("The Length of stack is %d\n", n);
+	php_printf("The Length of stack is %d\n", n);
 	for (; i <= n; ++i) {
 		int t = lua_type(L, i);
-		printf("%s:", lua_typename(L, t));
+		php_printf("%s:", lua_typename(L, t));
 		switch(t) {
 			case LUA_TNUMBER:
-				printf("%f", lua_tonumber(L, i));
+				php_printf("%f", lua_tonumber(L, i));
 				break;
 			case LUA_TSTRING:
-				printf("%s", lua_tostring(L, i));
+				php_printf("%s", lua_tostring(L, i));
 				break;
 			case LUA_TTABLE:
 				break;
 			case LUA_TFUNCTION:
 				break;
 			case LUA_TNIL:
-				printf("NULL");
+				php_printf("NULL");
 				break;
 			case LUA_TBOOLEAN:
-				printf("%s", lua_toboolean(L, i) ? "TRUE" : "FALSE");
+				php_printf("%s", lua_toboolean(L, i) ? "TRUE" : "FALSE");
 				break;
 			default:
 				break;
 		}
-		printf("\n");
+		php_printf("\n");
 	}
 }
 /* }}} */
@@ -197,12 +197,7 @@ zend_object *php_lua_create_object(zend_class_entry *ce)
 
 	lua_atpanic(L, php_lua_atpanic);
 
-	intern = emalloc(sizeof(php_lua_object) + sizeof(zval) * (ce->default_properties_count - 1));
-
-	if (!intern) {
-		php_error_docref(NULL, E_ERROR, "alloc memory for lua object failed");
-	}
-
+	intern = ecalloc(1, sizeof(php_lua_object) + zend_object_properties_size(ce));
 	intern->L = L;
 
 	zend_object_std_init(&intern->obj, ce);
@@ -217,27 +212,22 @@ zend_object *php_lua_create_object(zend_class_entry *ce)
 /** {{{ static zval * php_lua_read_property(zval *object, zval *member, int type)
 */
 zval *php_lua_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv){
-	lua_State *L = NULL;
-	zval *tmp_member = NULL;
+	lua_State *L = (Z_LUAVAL_P(object))->L;
+	zend_string *str_member;
 
 	if (type != BP_VAR_R) {
 		ZVAL_NULL(rv);
 		return rv;
 	}
 
-	if (Z_TYPE_P(member) != IS_STRING) {
-		*tmp_member = *member;
-		zval_copy_ctor(tmp_member);
-		convert_to_string(tmp_member);
-		member = tmp_member;
-	}
-
-	L = (Z_LUAVAL_P(object))->L;
+	str_member = zval_get_string(member);
 #if (LUA_VERSION_NUM < 502)
-	lua_getfield(L, LUA_GLOBALSINDEX, Z_STRVAL_P(member));
+	lua_getfield(L, LUA_GLOBALSINDEX, ZSTR_VAL(str_member));
 #else
-	lua_getglobal(L, Z_STRVAL_P(member));
+	lua_getglobal(L, ZSTR_VAL(str_member));
 #endif
+	zend_string_release(str_member);
+
 	php_lua_get_zval_from_lua(L, -1, object, rv);
 	lua_pop(L, 1);
 	return rv;
@@ -247,17 +237,8 @@ zval *php_lua_read_property(zval *object, zval *member, int type, void **cache_s
 /** {{{ static void php_lua_write_property(zval *object, zval *member, zval *value)
 */
 static void php_lua_write_property(zval *object, zval *member, zval *value, void ** key) {
-	lua_State *L 	 = NULL;
-	zval *tmp_member = NULL;
-
-	if (Z_TYPE_P(member) != IS_STRING) {
-		*tmp_member = *member;
-		zval_copy_ctor(tmp_member);
-		convert_to_string(tmp_member);
-		member = tmp_member;
-	}
-
-	L = (Z_LUAVAL_P(object))->L;
+	lua_State *L = (Z_LUAVAL_P(object))->L;
+	zend_string *str_member = zval_get_string(member);
 
 #if (LUA_VERSION_NUM < 502)
 	php_lua_send_zval_to_lua(L, member);
@@ -269,9 +250,7 @@ static void php_lua_write_property(zval *object, zval *member, zval *value, void
 	lua_setglobal(L, Z_STRVAL_P(member));
 #endif
 
-	if (tmp_member) {
-		zval_ptr_dtor(tmp_member);
-	}
+	zend_string_release(str_member);
 }
 /* }}} */
 
@@ -569,13 +548,9 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 		}
 	} else if (IS_OBJECT == Z_TYPE_P(func)
 			&& instanceof_function(Z_OBJCE_P(func), php_lua_get_closure_ce())) {
-		zval *closure = zend_read_property(php_lua_get_closure_ce(), func, ZEND_STRL("_closure"), 1, &rv);
-		if (!Z_LVAL_P(closure)) {
-			zend_throw_exception_ex(lua_exception_ce, 0, "invalid lua closure");
-			return NULL;
-		}
+		lua_closure_object *closure_obj = php_lua_closure_object_from_zend_object(Z_OBJ_P(func));
 		bp = lua_gettop(L);
-		lua_rawgeti(L, LUA_REGISTRYINDEX, Z_LVAL_P(closure));
+		lua_rawgeti(L, LUA_REGISTRYINDEX, closure_obj->closure);
 		if (LUA_TFUNCTION != lua_type(L, lua_gettop(L))) {
 			lua_pop(L, -1);
 			zend_throw_exception_ex(lua_exception_ce, 0, "call to lua closure failed");

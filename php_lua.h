@@ -61,6 +61,7 @@ static inline php_lua_object *php_lua_obj_from_obj(zend_object *obj) {
   return (php_lua_object*)((char*)(obj)-XtOffsetOf(php_lua_object, obj));
 }
 
+#define Z_LUAVAL(obj)   php_lua_obj_from_obj(Z_OBJ((obj)))
 #define Z_LUAVAL_P(obj) php_lua_obj_from_obj(Z_OBJ_P((obj)))
 
 zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv);

@@ -25,6 +25,7 @@
 #include "Zend/zend_exceptions.h"
 
 #include "lua.h"                                                                
+#include "lua_closure.h"
 #include "lauxlib.h"                                                            
 #include "lualib.h"
 
@@ -33,6 +34,7 @@
 static zend_class_entry *lua_closure_ce;
 extern zend_class_entry *lua_ce;
 extern zend_class_entry *lua_exception_ce;
+static zend_object_handlers lua_closure_handlers;
 
 /** {{{ ARG_INFO
  *
@@ -45,10 +47,13 @@ ZEND_END_ARG_INFO()
 
 /** {{{ zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj)
  */
-zval * php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj) {
+zval* php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj) {
+	lua_closure_object *objval;
+
 	object_init_ex(instance, lua_closure_ce);
-	zend_update_property_long(lua_closure_ce, instance, ZEND_STRL("_closure"), ref_id);
-	zend_update_property(lua_closure_ce, instance, ZEND_STRL("_lua_object"), lua_obj);
+	objval = php_lua_closure_object_from_zend_object(Z_OBJ_P(instance));
+	objval->closure = ref_id;
+	ZVAL_ZVAL(&(objval->lua), lua_obj, 1, 0);
 
 	return instance;
 }
@@ -60,35 +65,13 @@ PHP_METHOD(lua_closure, __construct) {
 }
 /* }}} */
 
-/** {{{ proto LuaClosure::__destruct()
-*/
-PHP_METHOD(lua_closure, __destruct) {
-	zval *lua_obj, *closure, rv;
-
-	lua_obj = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_lua_object"), 1, &rv);
-	if (ZVAL_IS_NULL(lua_obj)
-			|| Z_TYPE_P(lua_obj) != IS_OBJECT
-			|| !instanceof_function(Z_OBJCE_P(lua_obj), lua_ce)) {
-		RETURN_FALSE;
-	}
-
-	closure = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_closure"), 1, &rv);
-	if (!Z_LVAL_P(closure)) {
-		RETURN_FALSE;
-	}
-
-	luaL_unref((Z_LUAVAL_P(lua_obj))->L, LUA_REGISTRYINDEX, Z_LVAL_P(closure));
-}
-/* }}} */
-
 /** {{{ proto LuaClosure::invoke(mxied $args)
 */
 PHP_METHOD(lua_closure, invoke) {
+	lua_closure_object *objval = php_lua_closure_object_from_zend_object(Z_OBJ_P(getThis()));
 	int bp, sp;
 	zval *arguments = NULL;
-	zval *lua_obj = NULL;
 	lua_State *L  = NULL;
-	zval *closure = NULL;
 	zval rv;
 
 	if (ZEND_NUM_ARGS()) {
@@ -100,25 +83,16 @@ PHP_METHOD(lua_closure, invoke) {
 		}
 	}
 
-	lua_obj = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_lua_object"), 1, &rv);
-
-	if (ZVAL_IS_NULL(lua_obj)
-			|| Z_TYPE_P(lua_obj) != IS_OBJECT
-			|| !instanceof_function(Z_OBJCE_P(lua_obj), lua_ce)) {
+	if (Z_TYPE(objval->lua) != IS_OBJECT
+			|| !instanceof_function(Z_OBJCE(objval->lua), lua_ce)) {
 		zend_throw_exception_ex(NULL, 0, "corrupted Lua object");
 		return;
 	}
 
-	closure = zend_read_property(lua_closure_ce, getThis(), ZEND_STRL("_closure"), 1, &rv);
-	if (!Z_LVAL_P(closure)) {
-		zend_throw_exception_ex(NULL, 0, "invalid lua closure");
-		return;
-	}
-
-	L = (Z_LUAVAL_P(lua_obj))->L;
+	L = (Z_LUAVAL(objval->lua))->L;
 
 	bp = lua_gettop(L);
-	lua_rawgeti(L, LUA_REGISTRYINDEX, Z_LVAL_P(closure));
+	lua_rawgeti(L, LUA_REGISTRYINDEX, objval->closure);
 	if (LUA_TFUNCTION != lua_type(L, lua_gettop(L))) {
 		lua_pop(L, -1);
 		zend_throw_exception_ex(NULL, 0, "call to lua closure failed");
@@ -147,13 +121,13 @@ PHP_METHOD(lua_closure, invoke) {
 	if (!sp) {
 		RETURN_NULL();
 	} else if (sp == 1) {
-		php_lua_get_zval_from_lua(L, -1, lua_obj, return_value);
+		php_lua_get_zval_from_lua(L, -1, &(objval->lua), return_value);
 	} else {
 		zval rv;
 		int  i = 0;
 		array_init(return_value);
 		for (i = -sp; i < 0; i++) {
-			php_lua_get_zval_from_lua(L, i, lua_obj, &rv);
+			php_lua_get_zval_from_lua(L, i, &(objval->lua), &rv);
 			add_next_index_zval(return_value, &rv);
 		}
 	}
@@ -166,51 +140,37 @@ PHP_METHOD(lua_closure, invoke) {
 }
 /* }}} */
 
-/** {{{ proto LuaClosure::__clone()
-*/
-PHP_METHOD(lua_closure, __clone) {
-}
-/* }}} */
-
 /* {{{ lua_class_methods[]
- *
  */
 zend_function_entry lua_closure_methods[] = {
 	PHP_ME(lua_closure, __construct,		NULL,  					ZEND_ACC_PRIVATE|ZEND_ACC_CTOR)
-	PHP_ME(lua_closure, __destruct,			NULL,  					ZEND_ACC_PUBLIC|ZEND_ACC_DTOR)
-	PHP_ME(lua_closure, __clone,			NULL,  					ZEND_ACC_PRIVATE)
 	PHP_ME(lua_closure, invoke,				arginfo_lua_invoke,  	ZEND_ACC_PUBLIC)
 	PHP_MALIAS(lua_closure, __invoke, invoke, arginfo_lua_invoke,	ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
-static void php_lua_closure_dtor_object(void *object, zend_object_handlers handle) /* {{{ */
+static void php_lua_closure_free_obj(zend_object *zobj) /* {{{ */
 {
-	zend_object *obj = (zend_object*)object;
+	lua_closure_object *objval = php_lua_closure_object_from_zend_object(zobj);
 
-	zend_object_std_dtor(obj);
-
-	efree(obj);
+	if ((Z_TYPE(objval->lua) == IS_OBJECT) &&
+		instanceof_function(Z_OBJCE(objval->lua), lua_ce)) {
+		luaL_unref((Z_LUAVAL(objval->lua))->L, LUA_REGISTRYINDEX, objval->closure);
+	}
+	zval_dtor(&(objval->lua));
+	zend_object_std_dtor(zobj);
 } /* }}} */
 
 zend_object *php_lua_closure_create_object(zend_class_entry *ce) /* {{{ */
 {
-	zend_object *intern;
-	
-	intern = emalloc(sizeof(zend_object)+ sizeof(zval) * (ce->default_properties_count - 1));
+	lua_closure_object *objval = ecalloc(1, sizeof(lua_closure_object) + zend_object_properties_size(ce));
+	zend_object *zobj = &(objval->std);
 
-	if (!intern) {
-		php_error_docref(NULL, E_ERROR, "alloc memory for lua object failed");
-	}
-
-	zend_object_std_init(intern, ce);
-	object_properties_init(intern, ce);
-
-	intern->handlers = zend_get_std_object_handlers();
+	zend_object_std_init(zobj, ce);
+	zobj->handlers = &lua_closure_handlers;
 	
-	return intern;
-	
+	return zobj;
 } /* }}} */
 
 void php_lua_closure_register() /* {{{ */
@@ -222,10 +182,10 @@ void php_lua_closure_register() /* {{{ */
 	lua_closure_ce->create_object = php_lua_closure_create_object;
 	lua_closure_ce->ce_flags |= ZEND_ACC_FINAL;
 
-	zend_declare_property_long(lua_closure_ce, ZEND_STRL("_closure"), 0, ZEND_ACC_PRIVATE);
-	zend_declare_property_null(lua_closure_ce, ZEND_STRL("_lua_object"), ZEND_ACC_PRIVATE);
-
-
+	memcpy(&lua_closure_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	lua_closure_handlers.offset = XtOffsetOf(lua_closure_object, std);
+	lua_closure_handlers.clone_obj = NULL;
+	lua_closure_handlers.free_obj = php_lua_closure_free_obj;
 } /* }}} */
 
 zend_class_entry *php_lua_get_closure_ce() /* {{{ */
