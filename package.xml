@@ -23,11 +23,11 @@
   <email>msaraujo@php.net</email>
   <active>yes</active>
  </developer>
- <date>2017-07-12</date>
+ <date>2017-12-31</date>
  <time>19:15:00</time>
  <version>
-  <release>2.0.4</release>
-  <api>2.0.4</api>
+  <release>2.0.5</release>
+  <api>2.0.5</api>
  </version>
  <stability>
   <release>stable</release>
@@ -35,7 +35,9 @@
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
-  - Fixed bug #73964 (Segmentation fault)
+  - Refactor LuaClosure. (SaraG)
+  - Fix non-string member access in read/write prop. (SaraG)
+  - Fix allocation of lua object. (SaraG)
  </notes>
  <contents> 
   <dir name="/"> 
@@ -83,10 +85,10 @@
  <extsrcrelease />
  <changelog> 
   <release> 
-   <date>2017-02-10</date> 
+   <date>2017-12-31</date> 
    <version> 
-    <release>2.0.3</release> 
-    <api>2.0.3</api> 
+    <release>2.0.5</release> 
+    <api>2.0.5</api> 
    </version> 
    <stability> 
     <release>stable</release> 
@@ -94,7 +96,9 @@
    </stability> 
    <license uri="http://www.php.net/license">PHP License</license> 
    <notes> 
-    - Fixed issue #20 (PHP 7: Lua::eval(): unsupported type `unknown' for lua)
+    - Refactor LuaClosure. (SaraG)
+    - Fix non-string member access in read/write prop. (SaraG)
+    - Fix allocation of lua object. (SaraG)
    </notes> 
   </release> 
 
@@ -111,6 +115,21 @@
    <license uri="http://www.php.net/license">PHP License</license> 
    <notes> 
     - Fixed bug #73964 (Segmentation fault)
+   </notes> 
+  </release> 
+  <release> 
+   <date>2017-02-10</date> 
+   <version> 
+    <release>2.0.3</release> 
+    <api>2.0.3</api> 
+   </version> 
+   <stability> 
+    <release>stable</release> 
+    <api>stable</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Fixed issue #20 (PHP 7: Lua::eval(): unsupported type `unknown' for lua)
    </notes> 
   </release> 
 
