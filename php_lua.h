@@ -48,7 +48,7 @@ extern zend_module_entry lua_module_entry;
 #define LUA_G(v) (lua_globals.v)
 #endif
 
-#define PHP_LUA_VERSION "2.0.5"
+#define PHP_LUA_VERSION "2.0.6-dev"
 
 struct _php_lua_object {
   lua_State *L;
