@@ -430,6 +430,7 @@ try_again:
 					zval zkey;
 
 					HashTable *ht = HASH_OF(val);
+#if PHP_VERSION_ID < 70300
 					if (ZEND_HASH_APPLY_PROTECTION(ht)) {
 						ZEND_HASH_INC_APPLY_COUNT(ht);
 						if (ZEND_HASH_GET_APPLY_COUNT(ht) > 1) {
@@ -437,6 +438,15 @@ try_again:
 							ZEND_HASH_DEC_APPLY_COUNT(ht);
 							break;
 						}
+#else
+					if (!(GC_FLAGS(ht) & GC_IMMUTABLE)) {
+						if (GC_IS_RECURSIVE(ht)) {
+							php_error_docref(NULL, E_ERROR, "recursion found");
+							break;
+						} else {
+							GC_PROTECT_RECURSION(ht);
+						}
+#endif
 					}
 
 					lua_newtable(L);
@@ -452,8 +462,13 @@ try_again:
 						lua_settable(L, -3);
 					} ZEND_HASH_FOREACH_END();
 
+#if PHP_VERSION_ID < 70300
 					if (ZEND_HASH_APPLY_PROTECTION(ht)) {
 						ZEND_HASH_DEC_APPLY_COUNT(ht);
+#else
+					if (!(GC_FLAGS(ht) & GC_IMMUTABLE)) {
+						GC_UNPROTECT_RECURSION(ht);
+#endif
 					}
 				}
 			}
