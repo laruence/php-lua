@@ -1,4 +1,3 @@
-dnl $Id: config.m4 321796 2012-01-05 17:23:48Z laruence $
 PHP_ARG_WITH(lua, for lua support,
 [  --with-lua=[DIR]    Include php lua support])
 PHP_ARG_WITH(lua-version, to specify a custom lua version, [  --with-lua-version=[VERSION]]   Use the specified lua version.)
