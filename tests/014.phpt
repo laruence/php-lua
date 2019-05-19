@@ -26,13 +26,13 @@ $l->registerCallback('create_object', [T::class, 'create']);
 
 $l->eval(<<<CODE
 local t = create_object(2)
+table.sort( t, function( a, b ) return a > b end )
 for i,k in pairs(t) do
-    print(i, " -> ", k, "\\n")
+    print(i, " -> ", k, ",")
 end
 CODE
 );
 
 ?>
 --EXPECTF--
-v -> 2
-s -> string = 2
+v -> 2,s -> string = 2,
