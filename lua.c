@@ -321,8 +321,11 @@ zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv
 			break;
 		case LUA_TTABLE:
 			array_init(rv);
+			lua_pushvalue(L, index); /* stack now contains: -1 => table */
+
 			lua_pushnil(L);  /* first key */
-			while (lua_next(L, index-1) != 0) {
+			/* stack now contains: -1 => nil; -2 => table */
+			while (lua_next(L, -2) != 0) {
 				zval key, val;
 
 				/* uses 'key' (at index -2) and 'value' (at index -1) */
