@@ -75,7 +75,7 @@ PHP_METHOD(lua_closure, invoke) {
 	zval rv;
 
 	if (ZEND_NUM_ARGS()) {
-		arguments = emalloc(sizeof(zval*) * ZEND_NUM_ARGS());
+		arguments = emalloc(sizeof(zval) * ZEND_NUM_ARGS());
 		if (zend_get_parameters_array_ex(ZEND_NUM_ARGS(), arguments) == FAILURE) {
 			efree(arguments);
 			zend_throw_exception_ex(NULL, 0, "cannot get arguments for calling closure");
