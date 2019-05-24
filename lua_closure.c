@@ -53,7 +53,9 @@ zval* php_lua_closure_instance(zval *instance, long ref_id, zval *lua_obj) {
 	object_init_ex(instance, lua_closure_ce);
 	objval = php_lua_closure_object_from_zend_object(Z_OBJ_P(instance));
 	objval->closure = ref_id;
-	ZVAL_ZVAL(&(objval->lua), lua_obj, 1, 0);
+	if (lua_obj) {
+		ZVAL_ZVAL(&(objval->lua), lua_obj, 1, 0);
+	}
 
 	return instance;
 }

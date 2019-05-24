@@ -355,11 +355,6 @@ zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv
 		case LUA_TFUNCTION:
 			{
 				long ref_id = 0;
-				if (!lua_obj) {
-					php_error_docref(NULL, E_WARNING, "corrupted Lua object");
-					break;
-				}
-
 				lua_pushvalue(L, index);
 				ref_id = luaL_ref(L, LUA_REGISTRYINDEX);
 
