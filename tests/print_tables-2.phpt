@@ -1,5 +1,5 @@
 --TEST--
-ISSUE #040 (segmentation fault)
+print with tables - 2
 --SKIPIF--
 <?php
 if (!extension_loaded("lua")) print "skip lua extension missing";
@@ -8,7 +8,9 @@ if (!extension_loaded("lua")) print "skip lua extension missing";
 <?php
 $lua = new Lua();
 $lua->eval(<<<CODE
-local a = {}
+local a = {
+  LEFT   = 1,
+}
 print(a)
 CODE
 );
@@ -16,4 +18,5 @@ CODE
 --EXPECT--
 Array
  (
+     [LEFT] => 1
  )
