@@ -321,15 +321,18 @@ zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv
 			break;
 		case LUA_TTABLE:
 			array_init(rv);
-			lua_pushnil(L);  /* first key */
+			lua_pushvalue(L, index);  // table
+			lua_pushnil(L);  // first key
 			while (lua_next(L, -2) != 0) {
 				zval key, val;
 
-				/* uses 'key' (at index -2) and 'value' (at index -1) */
-				if (!php_lua_get_zval_from_lua(L, -2, lua_obj, &key)) {
+				lua_pushvalue(L, -2);
+
+				/* uses 'key' (at index -1) and 'value' (at index -2) */
+				if (!php_lua_get_zval_from_lua(L, -1, lua_obj, &key)) {
 					break;
 				}
-				if (!php_lua_get_zval_from_lua(L, -1, lua_obj, &val)) {
+				if (!php_lua_get_zval_from_lua(L, -2, lua_obj, &val)) {
 					zval_ptr_dtor(&key);
 					/* there is a warning already in php_lua_get_zval_from_lua */
 					break;
@@ -349,8 +352,9 @@ zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv
 					default:
 						break;
 				}
-				lua_pop(L, 1);
+				lua_pop(L, 2);
 			}
+			lua_pop(L, 1);
 			break;
 		case LUA_TFUNCTION:
 			{
