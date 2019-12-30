@@ -457,13 +457,31 @@ try_again:
 					lua_newtable(L);
 
 					ZEND_HASH_FOREACH_KEY_VAL_IND(ht, longkey, key, v) {
+						zend_bool key_pushed = 0;
+
 						if (key) {
-							ZVAL_STR(&zkey, key);
+							if (Z_TYPE_P(val) == IS_OBJECT && ZSTR_VAL(key)[0] == 0) {
+								/* This is object property and it's name should be demangled*/
+								const char *prop_name, *class_name;
+								size_t prop_len;
+
+								zend_unmangle_property_name_ex(key, &class_name, &prop_name, &prop_len);
+
+								lua_pushlstring(L, prop_name, prop_len);
+								key_pushed = 1;
+							} else {
+								ZVAL_STR(&zkey, key);
+							}
 						} else {
 							ZVAL_LONG(&zkey, longkey);
 						}
-						php_lua_send_zval_to_lua(L, &zkey);
+
+						if (!key_pushed) {
+							php_lua_send_zval_to_lua(L, &zkey);
+						}
+
 						php_lua_send_zval_to_lua(L, v);
+
 						lua_settable(L, -3);
 					} ZEND_HASH_FOREACH_END();
 
