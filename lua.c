@@ -424,7 +424,7 @@ try_again:
 					add_next_index_zval(callbacks, val);
 				} else {
 					zval *v;
-					ulong longkey;
+					zend_ulong longkey;
 					zend_string *key;
 					zval zkey;
 
