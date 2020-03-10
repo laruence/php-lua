@@ -23,11 +23,11 @@
   <email>msaraujo@php.net</email>
   <active>yes</active>
  </developer>
- <date>2018-12-21</date>
+ <date>2020-03-10</date>
  <time>11:10:00</time>
  <version>
-  <release>2.0.6</release>
-  <api>2.0.6</api>
+  <release>2.0.7</release>
+  <api>2.0.7</api>
  </version>
  <stability>
   <release>stable</release>
@@ -35,7 +35,7 @@
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
-  - Fixed Hash Recursive Detecting in PHP-7.3
+  - Fixed windows build for 7.4
  </notes>
  <contents> 
   <dir name="/"> 
@@ -83,6 +83,21 @@
  <extsrcrelease />
  <changelog> 
   <release> 
+   <date>2020-03-10</date> 
+   <version> 
+    <release>2.0.7</release> 
+    <api>2.0.7</api> 
+   </version> 
+   <stability> 
+    <release>stable</release> 
+    <api>stable</api> 
+   </stability> 
+   <license uri="http://www.php.net/license">PHP License</license> 
+   <notes> 
+    - Fixed windows build for 7.4
+   </notes> 
+  </release> 
+
    <date>2018-12-21</date> 
    <version> 
     <release>2.0.6</release> 
@@ -96,8 +111,6 @@
    <notes> 
     - Fixed Hash Recursive Detecting in PHP-7.3
    </notes> 
-  </release> 
-
   <release> 
    <date>2017-12-31</date> 
    <version> 
