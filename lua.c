@@ -174,6 +174,16 @@ static void php_lua_dtor_object(zend_object *object) /* {{{ */ {
 	php_lua_object *lua_obj = php_lua_obj_from_obj(object);
 
 	zend_object_std_dtor(&(lua_obj->obj));
+    
+    // zval_ptr_dtor callbacks
+    
+    zval *callbacks = &lua_obj->callbacks;
+    zval *callback;
+    ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
+        zval_ptr_dtor(callback);
+    } ZEND_HASH_FOREACH_END();
+    
+    zval_ptr_dtor(callbacks);
 }
 /* }}} */
 
@@ -204,7 +214,10 @@ zend_object *php_lua_create_object(zend_class_entry *ce)
 	object_properties_init(&intern->obj, ce);
 
 	intern->obj.handlers = &lua_object_handlers;
-	
+    
+    ZVAL_NULL(&intern->callbacks);
+    memcpy(lua_getextraspace(L), &intern, LUA_EXTRASPACE/* sizeof(void *) */);
+
 	return &intern->obj;
 }
 /* }}} */
@@ -264,7 +277,8 @@ static int php_lua_call_callback(lua_State *L) {
 
 	order = lua_tonumber(L, lua_upvalueindex(1));
 
-	callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1);
+    php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
+    callbacks = &lua_obj->callbacks;
 	
 	if (ZVAL_IS_NULL(callbacks)) {
 		return 0;
@@ -411,7 +425,8 @@ try_again:
 				if (zend_is_callable(val, 0, NULL)) {
 					zval *callbacks;
 
-					callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1);
+                    php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
+                    callbacks = &lua_obj->callbacks;
 
 					if (ZVAL_IS_NULL(callbacks)) {
 						array_init(callbacks);
@@ -771,7 +786,8 @@ PHP_METHOD(lua, registerCallback) {
 
 	L = (Z_LUAVAL_P(getThis()))->L;
 
-	callbacks = zend_read_static_property(lua_ce, ZEND_STRL("_callbacks"), 1);
+    php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
+    callbacks = &lua_obj->callbacks;
 
 	if (ZVAL_IS_NULL(callbacks)) {
 		array_init(callbacks);
@@ -786,7 +802,6 @@ PHP_METHOD(lua, registerCallback) {
 		RETURN_FALSE;
 	}
 
-	zval_add_ref(func);
 	add_next_index_zval(callbacks, func);
 
 	RETURN_ZVAL(getThis(), 1, 0);
@@ -859,7 +874,7 @@ PHP_MINIT_FUNCTION(lua) {
 	lua_object_handlers.write_property = php_lua_write_property;
 	lua_object_handlers.read_property  = php_lua_read_property;
 
-	lua_ce->ce_flags |= ZEND_ACC_FINAL;
+	//lua_ce->ce_flags |= ZEND_ACC_FINAL;
 
 	zend_declare_property_null(lua_ce, ZEND_STRL("_callbacks"), ZEND_ACC_STATIC|ZEND_ACC_PRIVATE);
 	zend_declare_class_constant_string(lua_ce, ZEND_STRL("LUA_VERSION"), LUA_RELEASE);
