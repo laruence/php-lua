@@ -175,15 +175,15 @@ static void php_lua_dtor_object(zend_object *object) /* {{{ */ {
 
 	zend_object_std_dtor(&(lua_obj->obj));
     
-    // zval_ptr_dtor callbacks
+	// zval_ptr_dtor callbacks
     
-    zval *callbacks = &lua_obj->callbacks;
-    zval *callback;
-    ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
-        zval_ptr_dtor(callback);
-    } ZEND_HASH_FOREACH_END();
+	zval *callbacks = &lua_obj->callbacks;
+	zval *callback;
+	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
+		zval_ptr_dtor(callback);
+	} ZEND_HASH_FOREACH_END();
     
-    zval_ptr_dtor(callbacks);
+	zval_ptr_dtor(callbacks);
 }
 /* }}} */
 
@@ -215,8 +215,8 @@ zend_object *php_lua_create_object(zend_class_entry *ce)
 
 	intern->obj.handlers = &lua_object_handlers;
     
-    ZVAL_NULL(&intern->callbacks);
-    memcpy(lua_getextraspace(L), &intern, LUA_EXTRASPACE/* sizeof(void *) */);
+	ZVAL_NULL(&intern->callbacks);
+	memcpy(lua_getextraspace(L), &intern, LUA_EXTRASPACE/* sizeof(void *) */);
 
 	return &intern->obj;
 }
@@ -277,8 +277,8 @@ static int php_lua_call_callback(lua_State *L) {
 
 	order = lua_tonumber(L, lua_upvalueindex(1));
 
-    php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
-    callbacks = &lua_obj->callbacks;
+	php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
+	callbacks = &lua_obj->callbacks;
 	
 	if (ZVAL_IS_NULL(callbacks)) {
 		return 0;
@@ -425,8 +425,8 @@ try_again:
 				if (zend_is_callable(val, 0, NULL)) {
 					zval *callbacks;
 
-                    php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
-                    callbacks = &lua_obj->callbacks;
+					php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
+					callbacks = &lua_obj->callbacks;
 
 					if (ZVAL_IS_NULL(callbacks)) {
 						array_init(callbacks);
