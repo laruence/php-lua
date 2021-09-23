@@ -786,8 +786,8 @@ PHP_METHOD(lua, registerCallback) {
 
 	L = (Z_LUAVAL_P(getThis()))->L;
 
-    php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
-    callbacks = &lua_obj->callbacks;
+	php_lua_object *lua_obj = *(php_lua_object **) lua_getextraspace(L);
+	callbacks = &lua_obj->callbacks;
 
 	if (ZVAL_IS_NULL(callbacks)) {
 		array_init(callbacks);
@@ -876,7 +876,7 @@ PHP_MINIT_FUNCTION(lua) {
 
 	//lua_ce->ce_flags |= ZEND_ACC_FINAL;
 
-	zend_declare_property_null(lua_ce, ZEND_STRL("_callbacks"), ZEND_ACC_STATIC|ZEND_ACC_PRIVATE);
+	//zend_declare_property_null(lua_ce, ZEND_STRL("_callbacks"), ZEND_ACC_STATIC|ZEND_ACC_PRIVATE);
 	zend_declare_class_constant_string(lua_ce, ZEND_STRL("LUA_VERSION"), LUA_RELEASE);
 
 	php_lua_closure_register();
