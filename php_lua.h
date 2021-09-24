@@ -73,6 +73,9 @@ PHP_MSHUTDOWN_FUNCTION(lua);
 PHP_MINFO_FUNCTION(lua);
 
 PHP_METHOD(lua, __construct);
+PHP_METHOD(lua, __destruct);
+PHP_METHOD(lua, destroy);
+PHP_METHOD(lua, callbacks);
 PHP_METHOD(lua, eval);
 PHP_METHOD(lua, require);
 

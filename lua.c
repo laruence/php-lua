@@ -189,22 +189,6 @@ static void php_lua_free_object(zend_object *object) /* {{{ */ {
 	zval_ptr_dtor(callbacks);
 }
 
-PHP_METHOD(lua, destroy) {
-	php_lua_object *lua_obj = Z_LUAVAL_P(getThis());
-	
-	zval *callbacks = &lua_obj->callbacks;
-	zval_ptr_dtor(callbacks);
-}
-
-PHP_METHOD(lua, callbacks) {
-	php_lua_object *lua_obj = Z_LUAVAL_P(getThis());
-	
-	// dtor callbacks and items
-	zval_add_ref(&lua_obj->callbacks);
-	RETURN_ZVAL(&lua_obj->callbacks, 0, 0);
-}
-/* }}} */
-
 /** {{{ static zend_object_value php_lua_create_object(zend_class_entry *ce)
  */
 zend_object *php_lua_create_object(zend_class_entry *ce)
@@ -826,6 +810,29 @@ PHP_METHOD(lua, getVersion) {
 }
 /* }}} */
 
+/** {{{ proto Lua::destroy()
+*/
+PHP_METHOD(lua, destroy) {
+	php_lua_object *lua_obj = Z_LUAVAL_P(getThis());
+	
+	// dtor callbacks and items
+	zval *callbacks = &lua_obj->callbacks;
+	zval_ptr_dtor(callbacks);
+	
+	RETURN_TRUE;
+}
+/* }}} */
+
+/** {{{ proto callable[] Lua::callbacks()
+*/
+PHP_METHOD(lua, callbacks) {
+	php_lua_object *lua_obj = Z_LUAVAL_P(getThis());
+	
+	zval_add_ref(&lua_obj->callbacks);
+	RETURN_ZVAL(&lua_obj->callbacks, 0, 0);
+}
+/* }}} */
+
 /** {{{ proto Lua::__construct()
 */
 PHP_METHOD(lua, __construct) {
@@ -839,8 +846,10 @@ PHP_METHOD(lua, __construct) {
 }
 /* }}} */
 
+/** {{{ proto Lua::__destruct()
+*/
 PHP_METHOD(lua, __destruct) {
-	php_printf("[destruct] ------------\n");
+
 }
 
 /* {{{ lua_class_methods[]
