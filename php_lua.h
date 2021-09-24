@@ -53,6 +53,7 @@ extern zend_module_entry lua_module_entry;
 struct _php_lua_object {
   lua_State *L;
   zval callbacks;
+  int is_destroy;
   zend_object obj;
 };
 
