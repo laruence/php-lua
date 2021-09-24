@@ -137,9 +137,9 @@ static int php_lua_atpanic(lua_State *L) {
 static int php_lua_print(lua_State *L)  {
 	zval rv;
 	int i = 0;
-    int nargs = lua_gettop(L);
+	int nargs = lua_gettop(L);
 
-    for (i = 1; i <= nargs; ++i) {
+	for (i = 1; i <= nargs; ++i) {
 		php_lua_get_zval_from_lua(L, i, NULL, &rv);
 		zend_print_zval_r(&rv, 1);
 		zval_ptr_dtor(&rv);
@@ -174,16 +174,6 @@ static void php_lua_dtor_object(zend_object *object) /* {{{ */ {
 	php_lua_object *lua_obj = php_lua_obj_from_obj(object);
 
 	zend_object_std_dtor(&(lua_obj->obj));
-    
-	// zval_ptr_dtor callbacks
-    
-	zval *callbacks = &lua_obj->callbacks;
-	zval *callback;
-	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
-		zval_ptr_dtor(callback);
-	} ZEND_HASH_FOREACH_END();
-    
-	zval_ptr_dtor(callbacks);
 }
 /* }}} */
 
@@ -193,6 +183,25 @@ static void php_lua_free_object(zend_object *object) /* {{{ */ {
 	if (lua_obj->L) {
 		lua_close(lua_obj->L);
 	}
+
+	// dtor callbacks and items
+	zval *callbacks = &lua_obj->callbacks;
+	zval_ptr_dtor(callbacks);
+}
+
+PHP_METHOD(lua, destroy) {
+	php_lua_object *lua_obj = Z_LUAVAL_P(getThis());
+	
+	zval *callbacks = &lua_obj->callbacks;
+	zval_ptr_dtor(callbacks);
+}
+
+PHP_METHOD(lua, callbacks) {
+	php_lua_object *lua_obj = Z_LUAVAL_P(getThis());
+	
+	// dtor callbacks and items
+	zval_add_ref(&lua_obj->callbacks);
+	RETURN_ZVAL(&lua_obj->callbacks, 0, 0);
 }
 /* }}} */
 
@@ -214,8 +223,9 @@ zend_object *php_lua_create_object(zend_class_entry *ce)
 	object_properties_init(&intern->obj, ce);
 
 	intern->obj.handlers = &lua_object_handlers;
-    
+	
 	ZVAL_NULL(&intern->callbacks);
+	zval_add_ref(&intern->callbacks);
 	memcpy(lua_getextraspace(L), &intern, LUA_EXTRASPACE/* sizeof(void *) */);
 
 	return &intern->obj;
@@ -802,6 +812,7 @@ PHP_METHOD(lua, registerCallback) {
 		RETURN_FALSE;
 	}
 
+	zval_add_ref(func);
 	add_next_index_zval(callbacks, func);
 
 	RETURN_ZVAL(getThis(), 1, 0);
@@ -828,17 +839,24 @@ PHP_METHOD(lua, __construct) {
 }
 /* }}} */
 
+PHP_METHOD(lua, __destruct) {
+	php_printf("[destruct] ------------\n");
+}
+
 /* {{{ lua_class_methods[]
  *
  */
 zend_function_entry lua_class_methods[] = {
 	PHP_ME(lua, __construct,		NULL,  					ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
-	PHP_ME(lua, eval,          		arginfo_lua_eval,  		ZEND_ACC_PUBLIC)
+	PHP_ME(lua, __destruct,			NULL,  					ZEND_ACC_PUBLIC|ZEND_ACC_DTOR)
+	PHP_ME(lua, eval,				arginfo_lua_eval,  		ZEND_ACC_PUBLIC)
 	PHP_ME(lua, include,			arginfo_lua_include, 	ZEND_ACC_PUBLIC)
 	PHP_ME(lua, call,				arginfo_lua_call,  		ZEND_ACC_PUBLIC)
 	PHP_ME(lua, assign,				arginfo_lua_assign,		ZEND_ACC_PUBLIC)
 	PHP_ME(lua, getVersion,			NULL, 					ZEND_ACC_PUBLIC|ZEND_ACC_ALLOW_STATIC)
 	PHP_ME(lua, registerCallback,	arginfo_lua_register, 	ZEND_ACC_PUBLIC)
+	PHP_ME(lua, destroy,			NULL, 					ZEND_ACC_PUBLIC)
+	PHP_ME(lua, callbacks,			NULL, 					ZEND_ACC_PUBLIC)
 	PHP_MALIAS(lua, __call, call, 	arginfo_lua_call,		ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
