@@ -825,11 +825,13 @@ PHP_METHOD(lua, destroy) {
 	if(0 == lua_obj->is_destroy) {
 		zval *callbacks = &lua_obj->callbacks;
 		zval_ptr_dtor(callbacks);
+		
+		lua_obj->is_destroy = 1;
+		
+		RETURN_TRUE;
 	}
 	
-	lua_obj->is_destroy = 1;
-	
-	RETURN_TRUE;
+	RETURN_FALSE;
 }
 /* }}} */
 
