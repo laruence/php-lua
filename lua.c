@@ -180,6 +180,8 @@ static void php_lua_dtor_object(zend_object *object) /* {{{ */ {
 static void php_lua_free_object(zend_object *object) /* {{{ */ {
 	php_lua_object *lua_obj = php_lua_obj_from_obj(object);
 
+    zend_objects_destroy_object(&lua_obj->obj);
+
 	if (lua_obj->L) {
 		lua_close(lua_obj->L);
 	}
