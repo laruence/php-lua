@@ -822,8 +822,10 @@ PHP_METHOD(lua, destroy) {
 	php_lua_object *lua_obj = Z_LUAVAL_P(getThis());
 	
 	// dtor callbacks and items
-	zval *callbacks = &lua_obj->callbacks;
-	zval_ptr_dtor(callbacks);
+	if(0 == lua_obj->is_destroy) {
+		zval *callbacks = &lua_obj->callbacks;
+		zval_ptr_dtor(callbacks);
+	}
 	
 	lua_obj->is_destroy = 1;
 	
