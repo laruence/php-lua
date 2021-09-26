@@ -53,7 +53,6 @@ extern zend_module_entry lua_module_entry;
 struct _php_lua_object {
   lua_State *L;
   zval callbacks;
-  int is_destroy;
   zend_object obj;
 };
 
@@ -75,10 +74,15 @@ PHP_MINFO_FUNCTION(lua);
 
 PHP_METHOD(lua, __construct);
 PHP_METHOD(lua, __destruct);
+PHP_METHOD(lua, eval);
+PHP_METHOD(lua, include);
+PHP_METHOD(lua, call);
+PHP_METHOD(lua, assign);
+PHP_METHOD(lua, getVersion);
+PHP_METHOD(lua, registerCallback);
 PHP_METHOD(lua, destroy);
 PHP_METHOD(lua, callbacks);
-PHP_METHOD(lua, eval);
-PHP_METHOD(lua, require);
+PHP_METHOD(lua, __call);
 
 #endif	/* PHP_LUA_H */
 

@@ -186,11 +186,9 @@ static void php_lua_free_object(zend_object *object) /* {{{ */ {
 		lua_close(lua_obj->L);
 	}
 
-	// dtor callbacks and items
-	if(1 != lua_obj->is_destroy) {
-		zval *callbacks = &lua_obj->callbacks;
-		zval_ptr_dtor(callbacks);
-	}
+	// destory callbacks items and callbacks
+	zval *callbacks = &lua_obj->callbacks;
+	zval_ptr_dtor(callbacks);
 }
 
 /** {{{ static zend_object_value php_lua_create_object(zend_class_entry *ce)
@@ -215,8 +213,6 @@ zend_object *php_lua_create_object(zend_class_entry *ce)
 	ZVAL_NULL(&intern->callbacks);
 	zval_add_ref(&intern->callbacks);
 	memcpy(lua_getextraspace(L), &intern, LUA_EXTRASPACE/* sizeof(void *) */);
-	
-	intern->is_destroy = 0;
 
 	return &intern->obj;
 }
@@ -820,17 +816,13 @@ PHP_METHOD(lua, getVersion) {
 */
 PHP_METHOD(lua, destroy) {
 	php_lua_object *lua_obj = Z_LUAVAL_P(getThis());
-	
-	// dtor callbacks and items
-	if(0 == lua_obj->is_destroy) {
-		zval *callbacks = &lua_obj->callbacks;
-		zval_ptr_dtor(callbacks);
-		
-		lua_obj->is_destroy = 1;
-		
-		RETURN_TRUE;
+
+	zval *callbacks = &lua_obj->callbacks;
+	if(!ZVAL_IS_NULL(callbacks)) {
+		// destory callbacks items and empty callbacks
+		zend_hash_clean(Z_ARRVAL_P(callbacks));
 	}
-	
+
 	RETURN_FALSE;
 }
 /* }}} */
