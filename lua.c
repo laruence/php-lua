@@ -773,10 +773,11 @@ PHP_METHOD(lua, registerCallback) {
 	char *name;
 	size_t len;
 	zval *func;
+	long index = 0;
 	lua_State *L;
 	zval* callbacks;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS(),"sz", &name, &len, &func) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(),"sz|l", &name, &len, &func, &index) == FAILURE) {
 		return;
 	}
 
@@ -789,19 +790,22 @@ PHP_METHOD(lua, registerCallback) {
 		array_init(callbacks);
 	}
 
-	if (zend_is_callable(func, 0, NULL)) {
-		lua_pushnumber(L, zend_hash_num_elements(Z_ARRVAL_P(callbacks)));
-		lua_pushcclosure(L, php_lua_call_callback, 1);
-		lua_setglobal(L, name);
-	} else {
+	if (!zend_is_callable(func, 0, NULL)) {
 		zend_throw_exception_ex(lua_exception_ce, 0, "invalid php callback");
 		RETURN_FALSE;
 	}
+	
+	if(index == 0) {
+		index = zend_hash_num_elements(Z_ARRVAL_P(callbacks));
+		zval_add_ref(func);
+		add_next_index_zval(callbacks, func);
+	}
 
-	zval_add_ref(func);
-	add_next_index_zval(callbacks, func);
-
-	RETURN_ZVAL(getThis(), 1, 0);
+	lua_pushnumber(L, index);
+	lua_pushcclosure(L, php_lua_call_callback, 1);
+	lua_setglobal(L, name);
+	
+	RETURN_LONG(index);
 }
 /* }}} */
 
