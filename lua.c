@@ -125,7 +125,7 @@ static void php_lua_stack_dump(lua_State* L) {
 /** {{{ static int php_lua_atpanic(lua_State *L)
 */
 static int php_lua_atpanic(lua_State *L) {
-	php_error_docref(NULL, E_ERROR, "lua panic (%s)", lua_tostring(L, 1));
+	zend_throw_exception_ex(NULL, 0, "lua panic (%s)", lua_tostring(L, 1));
 	lua_pop(L, 1);
 	zend_bailout();
 	return 0;
@@ -456,7 +456,7 @@ try_again:
 #endif
 							) {
 
-							php_error_docref(NULL, E_ERROR, "recursion found");
+							zend_throw_exception_ex(NULL, 0, "recursion found");
 							break;
 						}
 #if PHP_VERSION_ID < 70300
@@ -522,7 +522,7 @@ try_again:
 			goto try_again;
 			break;
 		default:
-			php_error_docref(NULL, E_ERROR, "unsupported type `%s' for lua", zend_zval_type_name(val));
+			zend_throw_exception_ex(NULL, 0, "unsupported type `%s' for lua", zend_zval_type_name(val));
 			lua_pushnil(L);
 			return 1;
 	}
@@ -555,8 +555,7 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 			   php_error_docref(NULL, E_WARNING,
 			   "invalid lua function, argument must be an array which contain two elements: array('table', 'method')");
 			   */
-			zend_throw_exception_ex(lua_exception_ce, 0,
-					"invalid lua function, argument must be an array which contain two elements: array('table', 'method')");
+            zend_throw_exception_ex(NULL, 0, "invalid lua function, argument must be an array which contain two elements: array('table', 'method')");
 			return NULL;
 		}
 #if (LUA_VERSION_NUM < 502)
@@ -566,14 +565,14 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 #endif
 		if (LUA_TTABLE != lua_type(L, lua_gettop(L))) {
 			lua_pop(L, -1);
-			zend_throw_exception_ex(lua_exception_ce, 0, "invalid lua table '%s'", Z_STRVAL_P(t));
+            zend_throw_exception_ex(NULL, 0, "invalid lua table '%s'", Z_STRVAL_P(t));
 			return NULL;
 		}
 		bp = lua_gettop(L);
 		lua_getfield(L, -1, Z_STRVAL_P(f));
 		if (LUA_TFUNCTION != lua_type(L, lua_gettop(L))) {
 			lua_pop(L, -2);
-			zend_throw_exception_ex(lua_exception_ce, 0, "invalid lua table function '%s'.%s", Z_STRVAL_P(t), Z_STRVAL_P(f));
+            zend_throw_exception_ex(NULL, 0, "invalid lua table function '%s'.%s", Z_STRVAL_P(t), Z_STRVAL_P(f));
 			return NULL;
 		}
 	} else if (IS_STRING == Z_TYPE_P(func)) {
@@ -585,7 +584,7 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 #endif
 		if (LUA_TFUNCTION != lua_type(L, lua_gettop(L))) {
 			lua_pop(L, -1);
-			zend_throw_exception_ex(lua_exception_ce, 0, "invalid lua function '%s'", Z_STRVAL_P(func));
+            zend_throw_exception_ex(NULL, 0, "invalid lua function '%s'", Z_STRVAL_P(func));
 			return NULL;
 		}
 	} else if (IS_OBJECT == Z_TYPE_P(func)
@@ -595,7 +594,7 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 		lua_rawgeti(L, LUA_REGISTRYINDEX, closure_obj->closure);
 		if (LUA_TFUNCTION != lua_type(L, lua_gettop(L))) {
 			lua_pop(L, -1);
-			zend_throw_exception_ex(lua_exception_ce, 0, "call to lua closure failed");
+            zend_throw_exception_ex(NULL, 0, "call to lua closure failed");
 			return NULL;
 		}
 	}
@@ -611,12 +610,7 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 		zend_hash_apply_with_argument(Z_ARRVAL_P(args), (apply_func_arg_t)php_lua_arg_apply_func, (void *)L);
 	}
 
-	if (lua_pcall(L, arg_num, LUA_MULTRET, 0) != LUA_OK) {
-		php_error_docref(NULL, E_WARNING,
-				"call to lua function %s failed", lua_tostring(L, -1));
-		lua_pop(L, lua_gettop(L) - bp);
-		return NULL;
-	}
+	int ret = lua_pcall(L, arg_num, LUA_MULTRET, 0);
 
 	sp = lua_gettop(L) - bp;
 
@@ -639,6 +633,16 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 	if (IS_ARRAY == Z_TYPE_P(func)) {
 		lua_pop(L, -1);
 	}
+    
+    if(ret != LUA_OK) {
+        zval lua_ex;
+        object_init_ex(&lua_ex, lua_exception_ce);
+        zend_update_property(lua_exception_ce, &lua_ex, "err", sizeof("err")-1, retval);
+        zend_update_property_string(lua_exception_ce, &lua_ex, "message", sizeof("message")-1, "Call lua function fail.");
+        zend_update_property_long(lua_exception_ce, &lua_ex, "code", sizeof("code")-1, ret);
+        zend_throw_exception_object(&lua_ex);
+        return NULL;
+    }
 
 	return retval;
 } /* }}} */
@@ -659,27 +663,40 @@ PHP_METHOD(lua, eval) {
 	L = (Z_LUAVAL_P(getThis()))->L;
 
 	bp = lua_gettop(L);
-	if ((ret = luaL_loadbuffer(L, statements, len, "line")) != LUA_OK || (ret = lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK)) {
-		zend_throw_exception_ex(lua_exception_ce, ret, "%s", lua_tostring(L, -1));
-		lua_pop(L, 1);
-		RETURN_FALSE;
-	} else {
-		int ret_count;
+    
+    ret = luaL_loadbuffer(L, statements, len, "line");
+    if (ret == LUA_OK) {
+        ret = lua_pcall(L, 0, LUA_MULTRET, 0);
+    }
+    
+    int ret_count;
 
-		ret_count = lua_gettop(L) - bp;
-		if (ret_count > 1) {
-			zval rv;
-			int i = 0;
-			array_init(return_value);
-			for (i = -ret_count; i<0; i++) {
-				php_lua_get_zval_from_lua(L, i, getThis(), &rv);
-				add_next_index_zval(return_value, &rv);
-			}
-		} else if (ret_count) {
-			php_lua_get_zval_from_lua(L, -1, getThis(), return_value);
-		}
-		lua_pop(L, ret_count);
-	}
+    ret_count = lua_gettop(L) - bp;
+    if (ret_count > 1) {
+        zval rv;
+        int i = 0;
+        array_init(return_value);
+        for (i = -ret_count; i<0; i++) {
+            php_lua_get_zval_from_lua(L, i, getThis(), &rv);
+            add_next_index_zval(return_value, &rv);
+        }
+    } else if (ret_count) {
+        php_lua_get_zval_from_lua(L, -1, getThis(), return_value);
+    } else {
+        return ;
+    }
+    
+    lua_pop(L, ret_count);
+    
+    if (ret != LUA_OK) {
+        zval lua_ex;
+        object_init_ex(&lua_ex, lua_exception_ce);
+        zend_update_property(lua_exception_ce, &lua_ex, "err", sizeof("err")-1, return_value);
+        zend_update_property_string(lua_exception_ce, &lua_ex, "message", sizeof("message")-1, "Eval lua code fail.");
+        zend_update_property_long(lua_exception_ce, &lua_ex, "code", sizeof("code")-1, ret);
+        zend_throw_exception_object(&lua_ex);
+        return ;
+    }
 }
 /* }}} */
 
@@ -703,27 +720,40 @@ PHP_METHOD(lua, include) {
 	L = (Z_LUAVAL_P(getThis()))->L;
 
 	bp = lua_gettop(L);
-	if ((ret = luaL_loadfile(L, file)) != LUA_OK || (ret = lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK)) {
-		zend_throw_exception_ex(lua_exception_ce, ret, "%s", lua_tostring(L, -1));
-		lua_pop(L, 1);
-		RETURN_FALSE;
-	} else {
-		int ret_count;
+    
+    ret = luaL_loadfile(L, file);
+    if (ret == LUA_OK) {
+        ret = lua_pcall(L, 0, LUA_MULTRET, 0);
+    }
+    
+    int ret_count;
 
-		ret_count = lua_gettop(L) - bp;
-		if (ret_count > 1) {
-			zval rv;
-			int i = 0;
-			array_init(return_value);
-			for (i = -ret_count; i<0; i++) {
-				php_lua_get_zval_from_lua(L, i, getThis(), &rv);
-				add_next_index_zval(return_value, &rv);
-			}
-		} else if (ret_count) {
-			php_lua_get_zval_from_lua(L, -1, getThis(), return_value);
-		}
-		lua_pop(L, ret_count);
-	}
+    ret_count = lua_gettop(L) - bp;
+    if (ret_count > 1) {
+        zval rv;
+        int i = 0;
+        array_init(return_value);
+        for (i = -ret_count; i<0; i++) {
+            php_lua_get_zval_from_lua(L, i, getThis(), &rv);
+            add_next_index_zval(return_value, &rv);
+        }
+    } else if (ret_count) {
+        php_lua_get_zval_from_lua(L, -1, getThis(), return_value);
+    } else {
+        return ;
+    }
+    
+    lua_pop(L, ret_count);
+    
+    if (ret != LUA_OK) {
+        zval lua_ex;
+        object_init_ex(&lua_ex, lua_exception_ce);
+        zend_update_property(lua_exception_ce, &lua_ex, "err", sizeof("err")-1, return_value);
+        zend_update_property_string(lua_exception_ce, &lua_ex, "message", sizeof("message")-1, "Include lua file fail.");
+        zend_update_property_long(lua_exception_ce, &lua_ex, "code", sizeof("code")-1, ret);
+        zend_throw_exception_object(&lua_ex);
+        return ;
+    }
 }
 /* }}} */
 
@@ -792,7 +822,7 @@ PHP_METHOD(lua, registerCallback) {
 	}
 
 	if (!zend_is_callable(func, 0, NULL)) {
-		zend_throw_exception_ex(lua_exception_ce, 0, "invalid php callback");
+        zend_throw_exception_ex(NULL, 0, "invalid php callback");
 		RETURN_FALSE;
 	}
 	
@@ -923,6 +953,7 @@ PHP_MINIT_FUNCTION(lua) {
 	INIT_CLASS_ENTRY(ce, "LuaException", NULL);
 
 	lua_exception_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
+    zend_declare_property_null(lua_exception_ce, "err", sizeof("err")-1, ZEND_ACC_PUBLIC);
 
 	return SUCCESS;
 }
