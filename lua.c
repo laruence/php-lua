@@ -300,6 +300,12 @@ static int php_lua_call_callback(lua_State *L) {
 /* }}} */
 
 zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv) /* {{{ */ {
+#if (LUA_VERSION_NUM >= 503)
+	if (lua_isinteger(L, index)) {
+		ZVAL_LONG(rv, lua_tointeger(L, index));
+		return rv;
+	}
+#endif
 	switch (lua_type(L, index)) {
 		case LUA_TNIL:
 			ZVAL_NULL(rv);
@@ -340,8 +346,10 @@ zval *php_lua_get_zval_from_lua(lua_State *L, int index, zval *lua_obj, zval *rv
 
 				switch (Z_TYPE(key)) {
 					case IS_DOUBLE:
-					case IS_LONG:
 						add_index_zval(rv, Z_DVAL(key), &val);
+						break;
+					case IS_LONG:
+						add_index_zval(rv, Z_LVAL(key), &val);
 						break;
 					case IS_STRING:
 						add_assoc_zval(rv, Z_STRVAL(key), &val);
