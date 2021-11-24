@@ -544,7 +544,7 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 			   "invalid lua function, argument must be an array which contain two elements: array('table', 'method')");
 			   */
 			zend_throw_exception_ex(NULL, 0, 
-				"invalid lua function, argument must be an array which contain two elements: array('table', 'method')");
+					"invalid lua function, argument must be an array which contain two elements: array('table', 'method')");
 			return NULL;
 		}
 #if (LUA_VERSION_NUM < 502)
@@ -627,7 +627,7 @@ static zval *php_lua_call_lua_function(zval *lua_obj, zval *func, zval *args, in
 		zval lua_ex;
 		object_init_ex(&lua_ex, lua_exception_ce);
 		zend_update_property(lua_exception_ce, &lua_ex, "err", sizeof("err")-1, retval);
-		zend_update_property_string(lua_exception_ce, &lua_ex, "message", sizeof("message")-1, "Call lua function fail.");
+		zend_update_property_string(lua_exception_ce, &lua_ex, "message", sizeof("message")-1, "call to lua function failed");
 		zend_update_property_long(lua_exception_ce, &lua_ex, "code", sizeof("code")-1, ret);
 		zend_throw_exception_object(&lua_ex);
 		return NULL;
